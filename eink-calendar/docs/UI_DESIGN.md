@@ -57,17 +57,17 @@ Total canvas: 800 × 480 (the panel's native resolution).
 
 | Element | Size | Weight | Color |
 |---------|------|--------|-------|
-| Section labels (NOW, NEXT, TODAY) | 14pt | 500 | #6B645A (muted) |
+| Section labels (NOW, NEXT, TODAY) | 14pt | 500 | #4A4540 (muted) |
 | Clock + date | 20pt | 500 | #1F1B16 (ink) |
 | Current event title | 32pt | 500 | #1F1B16 |
-| Current event subtitle | 20pt | 400 | #6B645A |
+| Current event subtitle | 20pt | 400 | #4A4540 |
 | Next event title | 28pt | 500 | #1F1B16 |
 | **Hero countdown** | **92pt** | **500** | **#B83C2C (red)** |
-| Next event subtitle | 18pt | 400 | #6B645A |
-| Timeline hour labels | 13pt | 400 | #6B645A |
+| Next event subtitle | 18pt | 400 | #4A4540 |
+| Timeline hour labels | 13pt | 400 | #4A4540 |
 | Timeline event titles | 12pt | 500 | #1F1B16 |
 
-Two weights only (400 regular, 500 medium). Three colors only (ink, muted, red). E-ink doesn't do gradients or shadows, so the typographic hierarchy has to do all the work.
+Two weights only (400 regular, 500 medium). Three colors at design time (ink, muted, red); after quantize the muted `#4A4540` snaps to ink, leaving exactly two colors on screen plus the red accent. E-ink doesn't do gradients or shadows, so the typographic hierarchy has to do all the work — the muted color exists for browser-preview legibility and disappears in the final render. **Do not use `#6B645A` or any color with smaller RGB-distance to red than to ink — it will quantize to red and break the salience budget (see `BUGS.md` PALETTE-RED-LEAK).**
 
 ## Color use
 

@@ -29,9 +29,9 @@ The split is deliberate — UI iteration happens in a real browser, not on a mic
 **Why**: The renderer screenshots a static page. JS that queries `Date.now()` at screenshot time will give whatever the rendering laptop's clock says, not the time the firmware wakes. View model is computed once, server-side, with `now` baked in.
 
 **Pattern**: Color through the palette, never raw hex
-**Do**: Use `#EFEBDF` (paper), `#1F1B16` (ink), `#B83C2C` (red) — exactly the three colors in `EINK_PALETTE`.
-**Don't**: Add `#666`, `#888`, gradients, drop shadows, or any color that won't survive `Image.quantize`.
-**Why**: The render quantizes to a 3-color palette before the PNG is sent to the firmware. Anything else gets snapped to the nearest of those three and looks broken. UI changes that look great in the browser preview can fall apart after quantization — always inspect the post-quantize PNG, not the live `index.html`.
+**Do**: Inside `#canvas`, use `#EFEBDF` (paper), `#1F1B16` (ink), `#B83C2C` (red) — the three colors in `EINK_PALETTE`. A design-time grey for browser-preview hierarchy is allowed *only if* it's RGB-closer to ink than to red so it quantizes to ink. The verified-safe option is `#4A4540`. The `check-palette.sh` hook is the source of truth — its allowlist is what passes.
+**Don't**: Add `#666`, `#888`, gradients, drop shadows, or any color that won't survive `Image.quantize`. **Specifically don't use `#6B645A`** — it quantizes to red and broke the salience budget (logged as PALETTE-RED-LEAK in BUGS.md).
+**Why**: The render quantizes to a 3-color palette before the PNG is sent to the firmware. Browser preview lies. The quantizer picks each pixel's nearest palette color by RGB Euclidean distance, so a "muted grey" that *looks* grey in the browser may snap to red and silently leak the salience signal across all secondary text. Always re-render and pixel-count after introducing a new color: ink should outnumber red.
 
 **Pattern**: Framebuffers must use PSRAM
 **Do**: `heap_caps_malloc(W * H / 8, MALLOC_CAP_SPIRAM)` for both `bw_buffer` and `red_buffer`.

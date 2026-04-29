@@ -26,12 +26,14 @@ esac
 
 # Allowed colors (case-insensitive):
 #   #EFEBDF paper, #1F1B16 ink, #B83C2C red,
-#   #6B645A muted grey (used for secondary text — survives quantize to ink),
+#   #4A4540 dark muted grey (secondary text — verified to quantize to ink, NOT red),
 #   #d0cec5 page background (outside canvas), #2A2724 bezel (outside canvas).
 # Any other 3- or 6-digit hex is suspect.
+# Note: #6B645A was used previously and is intentionally NOT allowed — it
+# quantizes to red (RGB distance 98 vs 125 to ink) and broke PRD Principle 8.
 BAD=$(python3 - "$FILE" <<'PY'
 import re, sys, pathlib
-allowed = {"#efebdf", "#1f1b16", "#b83c2c", "#6b645a", "#d0cec5", "#2a2724"}
+allowed = {"#efebdf", "#1f1b16", "#b83c2c", "#4a4540", "#d0cec5", "#2a2724"}
 text = pathlib.Path(sys.argv[1]).read_text()
 hits = []
 for m in re.finditer(r"#[0-9a-fA-F]{3,6}\b", text):
@@ -51,7 +53,8 @@ PY
 if [ $? -ne 0 ]; then
   echo "PALETTE VIOLATION in $FILE — colors outside the 3-color e-ink palette will look broken after quantize:" >&2
   echo "$BAD" >&2
-  echo "Allowed: #EFEBDF (paper), #1F1B16 (ink), #B83C2C (red). Or #6B645A for muted text." >&2
+  echo "Allowed: #EFEBDF (paper), #1F1B16 (ink), #B83C2C (red). Or #4A4540 for muted text — verified to quantize to ink." >&2
+  echo "(Note: #6B645A is BLOCKED — it quantizes to red and will leak the salience signal across all secondary text.)" >&2
   exit 2
 fi
 exit 0

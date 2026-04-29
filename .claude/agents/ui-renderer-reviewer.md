@@ -16,12 +16,17 @@ The browser preview lies. What ships to the device is the post-quantize PNG.
 
 ## What to check
 
-1. **Palette compliance** — Read `index.html`. Every color used in styles must be one of:
+1. **Palette compliance** — Read `index.html`. Every color used in styles inside `#canvas` must be one of:
    - `#EFEBDF` (paper)
    - `#1F1B16` (ink)
    - `#B83C2C` (red)
-   - `#6B645A` or other muted greys are tolerated only if they survive quantize (test by rendering); they will most likely snap to ink.
-   Bezel/preview-only styles (`.bezel`) are exempt — they're outside `#canvas`. Flag anything else.
+   - `#4A4540` (verified-survivor muted grey — quantizes to ink; allowed for design-time hierarchy)
+   Bezel/preview-only styles (`.bezel`) and the page background are exempt — they're outside `#canvas`.
+
+   **Known-bad colors (must flag if they reappear)**:
+   - `#6B645A` — quantizes to RED, not ink (RGB-distance ~98 to red vs ~125 to ink). This is the PALETTE-RED-LEAK bug; do not let it return.
+
+   For any other muted grey, do not assume it's safe — compute distance to red vs ink, or just render and pixel-count.
 
 2. **No gradients, shadows, alpha** — `linear-gradient`, `box-shadow`, `rgba(...)` with non-1 alpha — all of these dither badly in 3-color quantize. Flag every occurrence inside `#canvas`.
 

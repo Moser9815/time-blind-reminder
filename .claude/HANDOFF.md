@@ -25,9 +25,8 @@ The product README's "order of operations" is the sequence:
 
 **UI design audit completed against the eight principles. Findings:**
 
-Two real bugs logged in `BUGS.md`:
-- `PALETTE-RED-LEAK` — `#6B645A` quantizes to red, breaking Principle 8 (reserve red for one thing). Visible in any rendered PNG.
-- `IMMINENT-NOOP` — `.next-countdown.imminent` CSS does nothing visually. Breaks Principle 5 in the most critical 5-min window.
+- `PALETTE-RED-LEAK` — **fixed** by replacing `#6B645A` with `#4A4540`. Render verified: ink now exceeds red. Doc drift cleaned up across 4 files. Two reviews (developer + ui-renderer) signed off clean.
+- `IMMINENT-NOOP` — `.next-countdown.imminent` CSS does nothing visually. Breaks Principle 5 in the most critical 5-min window. Still open.
 
 Design gaps (not bugs, future work):
 - **Past events look identical to upcoming events on the timeline** — Principle 3 partial. Add `"past"` state in `derive_view_data` (`render.py:166-177`) + dimmed CSS for `.event.past`.
@@ -39,11 +38,23 @@ What the UI gets right (verified by audit):
 - 92px red NEXT countdown vs 32px ink NOW title is the right pixel allocation per Altgassen et al. (next/prospective beats current/in-progress).
 - Skipping all-day events in `render.py` is correct.
 
-**Suggested order for the next session:**
-1. Fix `PALETTE-RED-LEAK` first — single search-replace in `index.html`, immediate large visual improvement, plus update `.claude/hooks/check-palette.sh` allowlist. Then re-render and confirm ink > red pixel count.
-2. Fix `IMMINENT-NOOP` — pick a visual treatment for the <5 min state.
-3. Tackle the design gaps in priority order (past events → depleting element → future-event decay).
-4. Then tackle `PNG-DECODE-STUB` and `BLIT-PLACEHOLDER` when hardware is in hand.
+**Open from ui-renderer review (not regressions, queue for later):**
+- Now-line crosses event titles in both standard and imminent renders, leaving a thin red rule across text. Functionally correct (now is inside the event) but a small typographic clash. Consider clipping the now-line behind the active event block, or breaking around the title.
+- In the imminent render, the now-line crosses an ink-fill block, leaving a faint red bar across near-black. Same observation, separate-context decision needed.
+
+**NEW direction (mid-session, not yet implemented):**
+User wants the device redesigned with:
+1. **Teenage Engineering aesthetic** (look and feel) — implies: monospace numerals, geometric sans labels with wide tracking + ALL CAPS, generous negative space, strong functional grid, hardware-control feel, limited-palette-as-code (which already aligns with our 3-color e-ink), rounded rectangles with consistent radii, no ornamental decoration.
+2. **Designed for low pixel count** — current UI crams too much detail and uses elements that are too small, looking jagged after quantization. Need: bigger type, fewer elements, simpler shapes, generous padding, no thin strokes, 14pt+ minimum where possible at 800x480.
+
+**Status**: PRD update with new principles + aesthetic direction is the next step. After PRD, audit current UI against the new direction to scope a redesign.
+
+**Suggested order for next session:**
+1. PRD updated with TE aesthetic + low-pixel-count principle (this session, in progress).
+2. Re-audit current `index.html` against the new principles — likely substantial redesign.
+3. Fix `IMMINENT-NOOP` as part of the redesign (since it's a visual-treatment decision).
+4. Address the now-line/event-block clashes from this session's review.
+5. Then tackle `PNG-DECODE-STUB` and `BLIT-PLACEHOLDER` when hardware is in hand.
 
 ## Parking Lot
 - Render server deployment to a Pi or Cloudflare Worker (so calendar updates when laptop is closed)
