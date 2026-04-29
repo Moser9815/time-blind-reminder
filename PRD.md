@@ -48,6 +48,35 @@ These are non-negotiable. Every UI decision traces back to these. Each principle
    *Source*: Hauser et al. (2015).
    *Implementation*: red is used ONLY for the active countdown / imminent-event marker. Never decorative. Tri-color discipline (paper / ink / red) is itself a salience budget.
 
+---
+
+Principles 9 and 10 are aesthetic / production-layer constraints, downstream of the cognitive principles 1–8. They do not override 1–8 — they govern *how* those principles are realized in pixels.
+
+9. **Designed at panel resolution.**
+   *Targets*: not a cognitive deficit — a production-quality requirement. The 800×480 tri-color e-ink panel (≈100 ppi at typical viewing distance) cannot render thin strokes, small type, or fine detail without aliasing/jaggedness that defeats glanceability (Principle 6). Detail that the browser preview renders cleanly via subpixel anti-aliasing collapses to broken edges after the panel quantizes to three colors.
+   *Source*: not science — design constraint. Panel spec from `eink-calendar/hardware/BOM.md` (Waveshare 7.5" tri-color, GDEY075Z08, 800×480).
+   *Implementation* (concrete minimums — these are floors, not targets):
+   - Body text: ≥ 18px (~14pt at this DPI)
+   - Labels (NOW / NEXT / TODAY / hour ticks): ≥ 16px, ALL CAPS, ≥0.1em letter-spacing
+   - Headlines (event titles): ≥ 28px
+   - Hero countdown: ≥ 92px (already met by current spec)
+   - No stroke, border, or divider thinner than 2px
+   - No element smaller than ~40×40px as a glanceable region
+   - No more than ~6 distinct text elements visible at once on the canvas
+   - Padding: minimum 24px between major zones, minimum 12px within a zone
+   - No serif faces, no italics, no font weights below 500
+
+10. **Teenage Engineering visual language.**
+    *Targets*: aesthetic coherence and product feel. The device is for personal use; the user wants it to read as a Teenage Engineering object (OP-1, TX-6, OB-4, EP-133, computer-1) rather than a generic information dashboard.
+    *Source*: not science — explicit user direction (2026-04-29).
+    *Implementation*:
+    - **Typography**: pick ONE numerals family from the geometric-sans / monospace canon (e.g. JetBrains Mono, Berkeley Mono, NB Architekt, IBM Plex Mono, Suisse Int'l Mono) and use it for *all* numeric content (clock, countdown, hour ticks). Tabular figures (`font-feature-settings: "tnum" 1`) required. Labels in ALL CAPS with ≥0.1em tracking.
+    - **Layout**: strong functional grid. Label-next-to-value pairs, the way labels sit next to controls on a hardware front panel. Generous negative space — fewer elements, larger.
+    - **Forms**: rounded rectangles with one consistent radius (recommend 6px). Hard edges. No drop shadows, no gradients, no inner glows.
+    - **Color discipline**: already satisfied by the 3-color e-ink palette. Red is the functional code color for "active / now," never decoration (this also restates Principle 8).
+    - **Decorative restraint**: every line, label, and block must have a function. If removing it does not lose meaning, remove it. No ornamental rules, no secondary "accent" lines, no flourishes.
+    - **Iconography** (if any): blocky, designed *at* the target resolution, not scaled down vector art.
+
 ## Anti-patterns (do NOT add these — they have counter-evidence)
 
 - **No push notifications, alarms, or audible beeps.** Smartphone notifications increase inattention/hyperactivity symptoms even in neurotypical users (Kushlev et al., 2016); ADHD users habituate to repetitive cues faster (Massa & O'Desky, 2012). Ambient display is the explicit alternative.
@@ -55,6 +84,10 @@ These are non-negotiable. Every UI decision traces back to these. Each principle
 - **No built-in Pomodoro / fixed time-boxing as default.** Clinician-popular but lacks high-quality RCT evidence in ADHD populations. If added later (parking lot), make it opt-in, not default.
 - **No "tap to see status."** Any required interaction gates a prospective-memory event. The cue must be passively encountered (Barkley, 2012).
 - **No uniform color/motion/size escalation across multiple elements.** Reserve escalation for the single most imminent item (Hauser et al., 2015).
+- **No cramming detail.** Total information density is bounded by Principle 9. To add an element, remove an element first. The screen is not a dashboard.
+- **No sub-minimum type sizes.** Anything under the Principle 9 floors (18px body / 16px label / 28px headline / 2px strokes) renders jagged after the panel quantizes — that directly undercuts the glanceability requirement of Principle 6.
+- **No thin lines, hairlines, or 1px borders.** They render as broken segments at 100 ppi tri-color. Use 2px minimum, or replace lines with negative space and grid alignment.
+- **No decorative elements without function.** Vector flourishes, ornamental rules, secondary "accent" lines that aren't structural — all violate Principle 10's restraint requirement *and* Principle 8's salience budget.
 
 ## Behavior
 
@@ -146,3 +179,4 @@ Wood, W., & Neal, D. T. (2007). A new look at habits and the habit-goal interfac
 
 - 2026-04-29: Initial PRD seeded from existing code and `eink-calendar/README.md`. Captures current behavior, not future direction.
 - 2026-04-29: User principles rewritten to be evidence-grounded — replaced the original three intuition-based principles with eight principles, each tied to a cognitive deficit and a source. Added Anti-patterns section with counter-evidence citations. Added Evidence base section noting honest scoping (most principles are theoretical/clinical-consensus, not direct UI RCT). Added References section.
+- 2026-04-29: Added aesthetic / production-layer principles 9 (Designed at panel resolution — concrete minimums for type, strokes, padding, element count) and 10 (Teenage Engineering visual language — typography, layout, forms, decorative restraint). Added matching anti-patterns: cramming detail, sub-minimum type sizes, thin lines/hairlines, decorative elements without function. Trigger: user feedback that the current layout crams too much detail into elements too small for the panel resolution and lacks the desired Teenage Engineering look-and-feel.
