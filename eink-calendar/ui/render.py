@@ -25,6 +25,8 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
+
 HERE = Path(__file__).parent
 HTML_TEMPLATE = HERE / "index.html"
 SAMPLE_PATH = HERE / "sample_data.json"
@@ -167,6 +169,8 @@ def derive_view_data(raw):
         state = "normal"
         if e is current:
             state = "current"
+        elif e["_end"] < now:
+            state = "past"
         elif e is next_event and view["next"] and view["next"]["minutesUntil"] < 30:
             state = "imminent"
         view["events"].append({
@@ -204,6 +208,12 @@ def render_to_png(view, out_path):
         page = browser.new_page(viewport={"width": 1024, "height": 768})
         page.goto(f"file://{tmp_html.resolve()}")
         page.wait_for_load_state("networkidle")
+        # Webfonts (JetBrains Mono, Inter) load asynchronously from Google
+        # Fonts; networkidle alone doesn't guarantee they're ready to paint.
+        # Without this wait the screenshot can ship a fallback face.
+        # `page.evaluate` auto-awaits returned promises — `wait_for_function`
+        # would see the Promise itself (always truthy) and return immediately.
+        page.evaluate("document.fonts.ready")
         canvas = page.locator("#canvas")
         canvas.screenshot(path=str(out_path))
         browser.close()
@@ -212,14 +222,27 @@ def render_to_png(view, out_path):
 
     # Quantize to the e-ink three-color palette so what you see in preview
     # matches what the panel can actually display.
+    #
+    # We use a saturation-aware classifier instead of PIL's nearest-color
+    # quantize because the PNG has anti-aliased text edges. Mid-grey
+    # antialiasing pixels are RGB-closer to red (#B83C2C) than to ink
+    # (#1F1B16) — nearest-color would snap glyph edges to red and leak
+    # the salience signal across all text. The classifier instead routes:
+    #   high-saturation reddish pixels → red (intentional red elements)
+    #   any dark pixel (low luminance)  → ink (text + dark UI)
+    #   everything else                 → paper
     img = Image.open(out_path).convert("RGB")
-    palette_img = Image.new("P", (1, 1))
-    flat = []
-    for c in EINK_PALETTE: flat.extend(c)
-    flat.extend([0, 0, 0] * (256 - len(EINK_PALETTE)))
-    palette_img.putpalette(flat)
-    quantized = img.quantize(palette=palette_img, dither=Image.Dither.NONE)
-    quantized.convert("RGB").save(out_path)
+    arr = np.asarray(img, dtype=np.int16)
+    r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
+    luminance = 0.299 * r + 0.587 * g + 0.114 * b
+    redness = r - np.maximum(g, b)
+    is_red = (redness > 40) & (r > 100)
+    is_ink = ~is_red & (luminance < 160)
+    out = np.empty_like(arr, dtype=np.uint8)
+    out[..., :] = EINK_PALETTE[0]   # default: paper
+    out[is_ink] = EINK_PALETTE[1]
+    out[is_red] = EINK_PALETTE[2]
+    Image.fromarray(out, "RGB").save(out_path)
     print(f"Wrote {out_path} ({out_path.stat().st_size:,} bytes)")
 
 

@@ -3,3 +3,4 @@ google-auth-oauthlib>=1.2
 google-api-python-client>=2.130
 playwright>=1.45
 pillow>=10.4
+numpy>=2.0

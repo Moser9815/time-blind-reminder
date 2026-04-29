@@ -61,7 +61,7 @@ Principles 9 and 10 are aesthetic / production-layer constraints, downstream of 
    - Headlines (event titles): ≥ 28px
    - Hero countdown: ≥ 92px (already met by current spec)
    - No stroke, border, or divider thinner than 2px
-   - No element smaller than ~40×40px as a glanceable region
+   - No element smaller than ~40×40px as a glanceable region. **Exempt**: structural strokes (dividers, depletion bars, the now-marker on the rail edge) are 1D linear elements, not regions, and may be smaller along the short axis. They still must be ≥2px on the stroke axis.
    - No more than ~6 distinct text elements visible at once on the canvas
    - Padding: minimum 24px between major zones, minimum 12px within a zone
    - No serif faces, no italics, no font weights below 500

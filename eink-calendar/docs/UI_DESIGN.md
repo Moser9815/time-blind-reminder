@@ -6,82 +6,79 @@ ADHD time blindness is not "I can't read a clock." It's "10:45 doesn't feel clos
 
 What helps is making time **visceral, spatial, and unavoidable**.
 
-## Three principles
+## Principles
 
-### 1. Countdown beats clock
+The full set lives in `PRD.md` — eight cognitive principles tied to the ADHD time-blindness literature, plus two aesthetic principles (panel-resolution minimums and Teenage Engineering language). This doc covers how those principles get realized in pixels.
 
-"23 min" is a stronger time prompt than "11:00." The countdown answers the question your brain is actually asking: *how much time do I have?* — without requiring any subtraction. It also forces an emotional update: at 25 it's "fine"; at 5 it's "go now"; at 1 it's "running."
+The shape of the result:
 
-The hero pixel allocation — 92pt red type — is the countdown to the next event. Wall-clock time of that event is small (18pt, muted) underneath, present but secondary. The current time of day is in 20pt at the top corner — there for orientation, not emphasis.
-
-### 2. Time as space
-
-The right side of the screen is a vertical day timeline from morning to evening. Each hour is a fixed vertical interval. Meetings appear as filled rectangles whose height encodes their duration. A red horizontal line marks "now."
-
-This makes the day a physical object. "I have a wall of meetings this afternoon" becomes literally visible as a wall. "I have nothing until 3" becomes a visible expanse of empty timeline. From across the room you don't read the screen — you *see* the shape of your day.
-
-### 3. Glanceable from 6+ feet
-
-The two-zone layout (now/next on the left, today on the right) means there's never a question of where to look. The hero countdown is readable from across a small office. Event titles in the timeline are small but still legible at desk distance. No icons to decode, no icons to ignore, no toolbar.
+- **Hero countdown is the device.** A 200px red JetBrains Mono numeral answers "how much time do I have?" without subtraction. Wall-clock time is the small thing in the corner (PRD Principle 4 — surface "next," de-emphasize "later").
+- **Day-as-space rail.** A vertical timeline from work-start to work-end shows where you are in the day. Past events go to a dashed outline (subordinate); current events get a red border; the next event within 30 min flips to ink-fill (escalation tier 1). The day's shape is literally visible (PRD Principle 3).
+- **Three escalation tiers as the next event approaches.** Default: red numeral on paper. <30 min: a red depletion bar appears below the numeral and shrinks linearly. <5 min: the whole hero block flips to a red panel with paper-color numeral — the alarm-bell state (PRD Principle 5).
+- **Red is never decoration.** Only the hero countdown, depletion bar, current-event border, and now-marker on the rail edge are red — the salience budget (PRD Principle 8).
+- **Glanceable from 6+ feet.** Type minimums and stroke minimums make every element survive the panel's 100 ppi quantization without aliasing artifacts (PRD Principle 9).
 
 ## Layout
 
-Total canvas: 800 × 480 (the panel's native resolution).
+Total canvas: 800 × 480 (the panel's native resolution). Two zones plus a header strip.
 
 ```
-0                                460  470               800
-┌─────────────────────────────────┬───┬──────────────────┐ 0
-│  10:37 am · Wed, Apr 29         │   │ TODAY            │
-│                                 │   │                  │
-│  NOW                            │   │ 9 am ───────     │
-│  Design review with Sara        │   │                  │
-│  Ends in 13 min · 10:50         │   │ 10  ─────────    │
-│                                 │   │ ▓ Design review  │
-│  ─────────────────              │ │ │ ─── now ─────    │
-│                                 │   │ 11  ─────────    │
-│  NEXT                           │   │ █ Standup        │
-│  Standup                        │   │ 12  ─────────    │
-│                                 │   │ ░ Lunch          │
-│      23 min                     │   │ 1pm ─────────    │
-│                                 │   │ ░ Focus block    │
-│  at 11:00 am · with team-eng    │   │ ░                │
-│                                 │   │ 2  ─────────     │
-│                                 │   │                  │
-│                                 │   │ 3  ─────────     │
-│                                 │   │ █ 1:1 with Alex  │
-│                                 │   │ 4  ─────────     │
-└─────────────────────────────────┴───┴──────────────────┘ 480
+0                                                504  524                       800
+┌─────────────────────────────────────────────────┬────┬─────────────────────────┐ 0
+│  10:37 AM  |  WED · APR 29                      │    │                         │
+├─────────────────────────────────────────────────┤    │  9 AM ───────           │ 72
+│                                                 │    │                         │
+│  NEXT IN                                        │    │  ┌─────────────────┐    │
+│                                                 │    │  │ DESIGN REVIEW … │    │
+│  ┌────────────────────┐                         │    │  └─────────────────┘    │
+│  │                    │                         │    │  11                     │
+│  │      23            │ MIN                     │    │  ┌─────────────────┐    │
+│  │                    │                         │    │  │ STANDUP         │    │
+│  └────────────────────┘                         │    │  └─────────────────┘    │
+│                                                 │    │  ┌─────────────────┐    │
+│  ━━━━━━━━━━━━━━━━━━━━━ ←— depletion bar (red)   │    │  │ LUNCH           │    │
+│                                                 │    │  └─────────────────┘    │
+│  Standup                                        │    │  1 PM                   │
+│  AT 11:00 AM · WITH TEAM-ENG                    │    │  ┌─────────────────┐    │
+│                                                 │    │  │ FOCUS BLOCK — … │   ▌│ ←— now-marker
+│                                                 │    │  └─────────────────┘    │
+│                                                 │    │  3                      │
+│                                                 │    │  ┌─────────────────┐    │
+│                                                 │    │  │ 1:1 WITH ALEX   │    │
+│                                                 │    │  └─────────────────┘    │
+│                                                 │    │  5                      │
+└─────────────────────────────────────────────────┴────┴─────────────────────────┘ 480
+       ←— left zone (NEXT hero) 504px            gap   ←— right rail (today) 276px
 ```
+
+Header strip is 72px tall, full canvas width, ink-rule divider at y=72. The left zone holds the NEXT hero countdown + event meta + (optional) depletion bar. The right rail holds the day timeline with hour ticks every 2 hours, event blocks positioned by start time, and a NOW marker on the rail's right edge.
 
 ## Type scale
 
-> **Note (2026-04-29):** PRD Principle 9 (Designed at panel resolution) sets concrete minimums that several entries below violate. The "PRD-9 min" column flags compliance. Values that fail are flagged ⚠ — the table records the *current* spec; the implementation gap should be closed in a redesign session, not patched ad hoc. Weight floor under PRD Principle 9 is 500 (no 400 weights).
+| Element | Family | Size | Weight | Case | Color |
+|---------|--------|------|--------|------|-------|
+| Clock numerals | JetBrains Mono | 28px | 500 | — | #1F1B16 (ink) |
+| Clock AM/PM | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
+| Date | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
+| "NEXT IN" label | Inter | 18px | 600 | UPPER, 0.18em | #1F1B16 |
+| **Hero countdown** | **JetBrains Mono** | **200px** | **700** | — | **#B83C2C (red)** |
+| Hero unit "MIN" | Inter | 24px | 600 | UPPER, 0.12em | #1F1B16 |
+| Next event title | Inter | 32px | 600 | — | #1F1B16 |
+| Next event meta numerals | JetBrains Mono | 18px | 500 | UPPER, 0.12em | #1F1B16 |
+| Next event meta sans | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
+| Rail hour-tick numerals | JetBrains Mono | 16px | 500 | UPPER, 0.12em | #1F1B16 |
+| Rail hour-tick AM/PM | Inter | 16px | 600 | UPPER, 0.12em | #1F1B16 |
+| Rail event title | Inter | 16px | 600 | UPPER, 0.1em | #1F1B16 |
 
-| Element | Size | Weight | Color | PRD-9 min | OK? |
-|---------|------|--------|-------|-----------|-----|
-| Section labels (NOW, NEXT, TODAY) | 14pt | 500 | #4A4540 (muted) | ≥16px CAPS, ≥0.1em track | ⚠ undersize |
-| Clock + date | 20pt | 500 | #1F1B16 (ink) | ≥18px | OK |
-| Current event title | 32pt | 500 | #1F1B16 | ≥28px headline | OK |
-| Current event subtitle | 20pt | 400 | #4A4540 | ≥18px, weight ≥500 | ⚠ weight |
-| Next event title | 28pt | 500 | #1F1B16 | ≥28px headline | OK |
-| **Hero countdown** | **92pt** | **500** | **#B83C2C (red)** | ≥92px | OK |
-| Next event subtitle | 18pt | 400 | #4A4540 | ≥18px, weight ≥500 | ⚠ weight |
-| Timeline hour labels | 13pt | 400 | #4A4540 | ≥16px CAPS label | ⚠ undersize, weight |
-| Timeline event titles | 12pt | 500 | #1F1B16 | ≥18px body | ⚠ undersize |
-| Timeline event time-of-day | 11pt | 400 | #4A4540 | ≥18px body, weight ≥500 | ⚠ undersize, weight |
-
-Two weights only (400 regular, 500 medium) — *legacy*; PRD-9 now floors weight at 500 across the whole canvas, so 400 should be retired in the next pass. Three colors at design time (ink, muted, red); after quantize the muted `#4A4540` snaps to ink, leaving exactly two colors on screen plus the red accent. E-ink doesn't do gradients or shadows, so the typographic hierarchy has to do all the work — the muted color exists for browser-preview legibility and disappears in the final render. **Do not use `#6B645A` or any color with smaller RGB-distance to red than to ink — it will quantize to red and break the salience budget (see `BUGS.md` PALETTE-RED-LEAK).**
+Every value meets PRD-9 floors. No weight below 500. No italics, no serifs.
 
 ## Typography family
 
-PRD Principle 10 calls for a Teenage-Engineering-style pairing: a single geometric-sans / monospace family for *all* numerals, and a clean uppercase sans for labels.
+PRD Principle 10 pairing: **JetBrains Mono** for all numeric content (clock, hero countdown, hour ticks, event-meta times) — `font-feature-settings: "tnum" 1` is on `#canvas` so tabular figures apply by inheritance. **Inter** for labels and event titles, ALL CAPS with letter-spacing ≥0.1em.
 
-- **Numerals** (clock, countdown, hour ticks, durations): pick ONE of — JetBrains Mono, Berkeley Mono, NB Architekt, IBM Plex Mono, Suisse Int'l Mono — and use it everywhere a digit appears. Tabular figures required (`font-feature-settings: "tnum" 1`, already enabled on `#canvas` in the current `index.html`). The countdown and timeline ticks must share the same family so they read as one product.
-- **Labels** (NOW, NEXT, TODAY, "now" tag, hour suffixes like `am` / `pm`): same family as numerals OR a paired uppercase sans. ALL CAPS, ≥0.1em letter-spacing, weight ≥500.
-- **Body / titles** (event titles, subtitles): geometric sans (Inter, Suisse Int'l, Helvetica Now, system-ui as a fallback). Weight ≥500 throughout — no 400.
-- **Forbidden**: serif faces, italics, condensed/compressed cuts, weights below 500, decorative display faces.
+Both load via Google Fonts CDN; `render.py` waits on `document.fonts.ready` before screenshotting so the PNG never ships a fallback face. To swap to a paid family (Berkeley Mono, NB Architekt) for production, drop the `<link>` in `index.html` and self-host the woff2.
 
-The current `index.html` declares `-apple-system, "Inter", "Segoe UI", system-ui, sans-serif` as a single stack for everything. That is acceptable as a temporary stop-gap — the layout work matters more than the family lock-in — but a final pass should specify the numerals family explicitly and load it as a webfont before render.
+Two weights only (500 medium for body/numerals, 600 semibold for labels/titles, 700 bold for the hero numeral). Three colors at design time (ink `#1F1B16`, muted `#4A4540`, red `#B83C2C`); after quantize the muted color snaps to ink, leaving exactly two colors on screen plus the red accent. **Do not use `#6B645A` or any color with smaller RGB-distance to red than to ink** — it will quantize to red and break the salience budget (see `BUGS.md` PALETTE-RED-LEAK).
 
 ## Layout grid
 

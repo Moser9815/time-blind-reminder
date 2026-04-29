@@ -31,12 +31,14 @@ Every bug gets logged here the moment it's mentioned, before any fix attempt. Up
 
 ### [IMMINENT-NOOP] The <5 min countdown escalation does nothing visually
 - **Reported**: 2026-04-29 (UI audit)
-- **Status**: open
-- **Severity**: high (silently breaks PRD Principle 5 — "escalate salience as deadlines approach", in the most critical 5-minute window)
-- **Where**: `eink-calendar/ui/index.html:325-327` — `.next-countdown.imminent` rule
-- **Symptom**: When `minutesUntil < 5`, the only style change is `font-weight: 500`, but the base `.next-countdown` is already `font-weight: 500`. The class is a no-op. The countdown looks identical at 23 minutes and 3 minutes. Verified by rendering a sample with `now` near a meeting start.
-- **Root cause**: The CSS rule was written but never given a meaningful visual delta.
-- **Fix**: TODO. Give `.next-countdown.imminent` an actual treatment — candidates: paper-on-red block (red background, paper text), scale to ~110px, or a depleting horizontal bar inside the block. Whatever's chosen should be visually distinct from both the default 92px-red and the `.event.imminent` (which is paper-on-ink at 30-min threshold). Consider also adding a mid-tier escalation at <15 min.
+- **Status**: fixed 2026-04-29 (resolved as part of the TE-aesthetic redesign)
+- **Severity**: high (silently broke PRD Principle 5 — "escalate salience as deadlines approach", in the most critical 5-minute window)
+- **Where**: was `eink-calendar/ui/index.html` — `.next-countdown.imminent` rule
+- **Fix (applied)**: redesign added three discrete escalation tiers tied to `minutesUntil`:
+  1. Default (>=30 min): red 200px numeral on paper
+  2. <30 min and >=5 min: red numeral + red depletion bar below; bar width = `(minutesUntil / 30) * 100%`, shrinking as time runs out
+  3. <5 min: hero block flips to a full red panel with paper-color numeral — full alarm-bell escalation
+  Verified at `now=10:57` with a Standup at 11:00 — hero clearly shows the red panel with paper "3 MIN".
 
 ### [PNG-DECODE-STUB] Firmware doesn't actually decode the PNG
 - **Reported**: 2026-04-29 (acknowledged in source comment)
