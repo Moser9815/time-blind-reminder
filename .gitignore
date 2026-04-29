@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# PlatformIO
+.pio/
+
+# Secrets (subproject .gitignores also cover these — belt and suspenders)
+**/credentials.json
+**/token.json
+**/secrets.h
+.env
+.env.local
+
+# Render artifacts
+**/_cache.png
+**/calendar.png
+**/test.png
+**/*.tmp.html
+
+# Claude Code — local-only
+.claude/settings.local.json
+.claude/.needs-review
+.claude/.docs-verified
+.claude/PLAN.md
+
+# Anything in .claude/ that's transient
+.claude/*.log

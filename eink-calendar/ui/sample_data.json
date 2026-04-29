@@ -1,0 +1,37 @@
+{
+  "_comment": "Mock calendar data. Used by `render.py --sample` so you can iterate on the UI without setting up Google OAuth. Times are local clock-time integers; the renderer derives countdowns and current time from `now`.",
+  "now": "2026-04-29T10:37:00",
+  "working_hours": { "start": 9, "end": 17 },
+  "events": [
+    {
+      "title": "Design review with Sara",
+      "start": "2026-04-29T10:00:00",
+      "end": "2026-04-29T10:50:00",
+      "attendees": "Sara Chen"
+    },
+    {
+      "title": "Standup",
+      "start": "2026-04-29T11:00:00",
+      "end": "2026-04-29T11:15:00",
+      "attendees": "team-eng"
+    },
+    {
+      "title": "Lunch",
+      "start": "2026-04-29T12:00:00",
+      "end": "2026-04-29T12:30:00",
+      "attendees": ""
+    },
+    {
+      "title": "Focus block — eink firmware",
+      "start": "2026-04-29T13:00:00",
+      "end": "2026-04-29T14:30:00",
+      "attendees": ""
+    },
+    {
+      "title": "1:1 with Alex",
+      "start": "2026-04-29T15:00:00",
+      "end": "2026-04-29T15:30:00",
+      "attendees": "Alex Park"
+    }
+  ]
+}

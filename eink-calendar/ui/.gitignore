@@ -1,0 +1,8 @@
+credentials.json
+token.json
+_cache.png
+*.tmp.html
+calendar.png
+test.png
+__pycache__/
+.venv/

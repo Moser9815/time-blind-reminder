@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Time Blind Reminder</title>
+<style>
+  /* The render canvas is exactly the e-paper resolution.
+     Open this file in a browser to preview the design.
+     The Python renderer screenshots #canvas at 800x480. */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #d0cec5;
+    font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* Mock device bezel — only visible in browser preview.
+     The renderer ignores it (screenshots #canvas only). */
+  .bezel {
+    background: #2A2724;
+    padding: 24px;
+    border-radius: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+
+  /* The actual e-ink canvas. 800x480, fixed. */
+  #canvas {
+    width: 800px;
+    height: 480px;
+    background: #EFEBDF;
+    color: #1F1B16;
+    position: relative;
+    overflow: hidden;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ============== Layout ============== */
+  .topbar {
+    position: absolute;
+    top: 28px;
+    left: 36px;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
+  .topbar .date {
+    font-weight: 400;
+    color: #6B645A;
+    margin-left: 12px;
+  }
+
+  .now-block {
+    position: absolute;
+    top: 88px;
+    left: 36px;
+    width: 410px;
+  }
+  .next-block {
+    position: absolute;
+    top: 240px;
+    left: 36px;
+    width: 410px;
+  }
+
+  .label {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    color: #6B645A;
+    margin-bottom: 12px;
+  }
+
+  .now-title {
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .now-sub {
+    font-size: 20px;
+    font-weight: 400;
+    color: #6B645A;
+  }
+
+  .divider {
+    position: absolute;
+    top: 198px;
+    left: 36px;
+    width: 410px;
+    height: 1px;
+    background: #1F1B16;
+    opacity: 0.2;
+  }
+
+  .next-title {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  .next-countdown {
+    font-size: 92px;
+    font-weight: 500;
+    color: #B83C2C;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 12px;
+  }
+  .next-countdown.imminent {
+    /* Below 5 min, the whole hero gets emphatic. */
+    font-weight: 500;
+  }
+  .next-sub {
+    font-size: 18px;
+    font-weight: 400;
+    color: #6B645A;
+  }
+
+  /* ============== Right column: timeline ============== */
+  .timeline-divider {
+    position: absolute;
+    left: 470px;
+    top: 36px;
+    width: 1px;
+    height: 408px;
+    background: #1F1B16;
+    opacity: 0.18;
+  }
+
+  .timeline {
+    position: absolute;
+    top: 36px;
+    left: 494px;
+    right: 28px;
+    bottom: 36px;
+    /* Timeline visual area: 9am at top, 5pm at bottom.
+       8 hours over ~408px = 51px per hour. Configurable in JS. */
+  }
+  .timeline-label {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    color: #6B645A;
+    margin-bottom: 16px;
+  }
+
+  .hour {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    border-top: 0.5px solid rgba(31, 27, 22, 0.18);
+    padding-top: 0;
+    pointer-events: none;
+  }
+  .hour-label {
+    position: absolute;
+    left: 0;
+    top: -7px;
+    font-size: 13px;
+    color: #6B645A;
+    background: #EFEBDF;
+    padding-right: 6px;
+  }
+
+  .event {
+    position: absolute;
+    left: 50px;
+    right: 12px;
+    background: rgba(31, 27, 22, 0.18);
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1F1B16;
+    overflow: hidden;
+  }
+  .event .time {
+    font-size: 11px;
+    font-weight: 400;
+    color: #6B645A;
+    margin-top: 2px;
+  }
+  .event.current {
+    background: #EFEBDF;
+    border: 2px solid #1F1B16;
+    padding: 2px 6px;
+  }
+  .event.imminent {
+    background: #1F1B16;
+    color: #EFEBDF;
+  }
+  .event.imminent .time {
+    color: #d0cec5;
+  }
+
+  .now-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #B83C2C;
+    z-index: 10;
+  }
+  .now-line::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #B83C2C;
+    transform: translateX(-4px);
+  }
+  .now-line::after {
+    content: "now";
+    position: absolute;
+    right: 0;
+    top: -16px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #B83C2C;
+  }
+</style>
+</head>
+<body>
+
+<div class="bezel">
+  <div id="canvas">
+
+    <!-- Top bar: clock + date -->
+    <div class="topbar">
+      <span id="clock-time">10:37 am</span>
+      <span class="date" id="clock-date">·  Wed, Apr 29</span>
+    </div>
+
+    <!-- NOW block -->
+    <div class="now-block">
+      <div class="label">NOW</div>
+      <div class="now-title" id="now-title">Design review with Sara</div>
+      <div class="now-sub" id="now-sub">Ends in 13 min · 10:50</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- NEXT block -->
+    <div class="next-block">
+      <div class="label">NEXT</div>
+      <div class="next-title" id="next-title">Standup</div>
+      <div class="next-countdown" id="next-countdown">23 min</div>
+      <div class="next-sub" id="next-sub">at 11:00 am · with team-eng</div>
+    </div>
+
+    <!-- Timeline divider line -->
+    <div class="timeline-divider"></div>
+
+    <!-- Timeline -->
+    <div class="timeline" id="timeline">
+      <div class="timeline-label">TODAY</div>
+      <!-- Populated by JS at the bottom of this file -->
+    </div>
+
+  </div>
+</div>
+
+<script>
+/*
+ * Renders the calendar layout from a sample data object.
+ * In production, render.py will template the same data into this same HTML.
+ * For browser preview, we just embed sample data here.
+ */
+const SAMPLE = {
+  now: { hour: 10, minute: 37 },
+  date: "Wed, Apr 29",
+  workingHours: { start: 9, end: 17 },
+  current: {
+    title: "Design review with Sara",
+    endHour: 10, endMinute: 50,
+    minutesLeft: 13
+  },
+  next: {
+    title: "Standup",
+    startHour: 11, startMinute: 0,
+    minutesUntil: 23,
+    subtitle: "with team-eng"
+  },
+  events: [
+    { title: "Design review with Sara", startH: 10, startM: 0, endH: 10, endM: 50, state: "current" },
+    { title: "Standup", startH: 11, startM: 0, endH: 11, endM: 15, state: "imminent" },
+    { title: "Lunch", startH: 12, startM: 0, endH: 12, endM: 30, state: "normal" },
+    { title: "Focus block — eink firmware", startH: 13, startM: 0, endH: 14, endM: 30, state: "normal" },
+    { title: "1:1 with Alex", startH: 15, startM: 0, endH: 15, endM: 30, state: "normal" }
+  ]
+};
+
+function render(data) {
+  // Top bar
+  document.getElementById("clock-time").textContent =
+    formatTime(data.now.hour, data.now.minute);
+  document.getElementById("clock-date").textContent = "·  " + data.date;
+
+  // NOW block
+  if (data.current) {
+    document.getElementById("now-title").textContent = data.current.title;
+    document.getElementById("now-sub").textContent =
+      `Ends in ${data.current.minutesLeft} min · ${formatTime(data.current.endHour, data.current.endMinute)}`;
+  } else {
+    document.getElementById("now-title").textContent = "Free";
+    document.getElementById("now-sub").textContent = "";
+  }
+
+  // NEXT block
+  if (data.next) {
+    document.getElementById("next-title").textContent = data.next.title;
+    document.getElementById("next-countdown").textContent = `${data.next.minutesUntil} min`;
+    document.getElementById("next-sub").textContent =
+      `at ${formatTime(data.next.startHour, data.next.startMinute)} · ${data.next.subtitle}`;
+    if (data.next.minutesUntil < 5) {
+      document.getElementById("next-countdown").classList.add("imminent");
+    }
+  } else {
+    document.getElementById("next-title").textContent = "Done for today";
+    document.getElementById("next-countdown").textContent = "—";
+    document.getElementById("next-sub").textContent = "";
+  }
+
+  // Timeline
+  renderTimeline(data);
+}
+
+function formatTime(h, m) {
+  const period = h >= 12 ? "pm" : "am";
+  const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+  return `${h12}:${m.toString().padStart(2, "0")} ${period}`;
+}
+
+function renderTimeline(data) {
+  const tl = document.getElementById("timeline");
+  // Remove existing dynamic children (everything after the label)
+  while (tl.children.length > 1) tl.removeChild(tl.lastChild);
+
+  const start = data.workingHours.start;
+  const end = data.workingHours.end;
+  const hours = end - start;
+  const labelOffset = 36; // px below the TODAY label
+  const usableHeight = 408 - labelOffset - 10; // bottom padding
+  const pxPerHour = usableHeight / hours;
+
+  // Hour grid lines + labels
+  for (let h = start; h <= end; h++) {
+    const y = labelOffset + (h - start) * pxPerHour;
+    const div = document.createElement("div");
+    div.className = "hour";
+    div.style.top = y + "px";
+    const lbl = document.createElement("span");
+    lbl.className = "hour-label";
+    if (h === start) lbl.textContent = `${h % 12 || 12} am`;
+    else if (h === 12) lbl.textContent = "12";
+    else if (h === 13) lbl.textContent = "1 pm";
+    else if (h > 12) lbl.textContent = `${h - 12}`;
+    else lbl.textContent = `${h}`;
+    div.appendChild(lbl);
+    tl.appendChild(div);
+  }
+
+  // Events
+  for (const ev of data.events) {
+    const startY = labelOffset + ((ev.startH + ev.startM/60) - start) * pxPerHour;
+    const endY = labelOffset + ((ev.endH + ev.endM/60) - start) * pxPerHour;
+    const div = document.createElement("div");
+    div.className = "event " + (ev.state || "normal");
+    div.style.top = startY + "px";
+    div.style.height = (endY - startY) + "px";
+    const titleSpan = document.createElement("div");
+    titleSpan.textContent = ev.title;
+    div.appendChild(titleSpan);
+    if (endY - startY > 24) {
+      const timeSpan = document.createElement("div");
+      timeSpan.className = "time";
+      timeSpan.textContent = `${formatTime(ev.startH, ev.startM)} – ${formatTime(ev.endH, ev.endM)}`;
+      div.appendChild(timeSpan);
+    }
+    tl.appendChild(div);
+  }
+
+  // Now line
+  const nowY = labelOffset + ((data.now.hour + data.now.minute/60) - start) * pxPerHour;
+  const nowLine = document.createElement("div");
+  nowLine.className = "now-line";
+  nowLine.style.top = nowY + "px";
+  tl.appendChild(nowLine);
+}
+
+// Render the sample on load. In the rendered HTML produced by render.py,
+// the sample is replaced with live data and this script is not needed.
+render(SAMPLE);
+</script>
+
+</body>
+</html>
