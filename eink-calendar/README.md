@@ -37,13 +37,18 @@ See `docs/POWER.md` for the full math + sanity checks.
 
 ## Design rationale
 
-The ADHD time blindness problem isn't reading a clock — it's that "11:00 standup" feels imaginary until 10:58. The UI fights this with three principles:
+The ADHD time blindness problem isn't reading a clock — it's that "11:00 standup" feels imaginary until 10:58. "Time blindness" itself decomposes into measurable, partly dissociable deficits — perceptual time estimation, time-based prospective memory, temporal/delay discounting, and a collapsed working-memory representation of future time horizons (Barkley, 1997, 2012; Altgassen et al., 2013; Jackson & MacKillop, 2016).
 
-1. **Countdown beats clock.** "23 min" in giant red is the hero pixel allocation. Wall-clock time is small.
-2. **Time as space.** The right side is a vertical day timeline — your remaining day becomes visible territory, not abstract numbers.
-3. **Glanceable from 6+ feet.** Two zones (now/next on the left, today on the right). No icons. No clutter.
+The full evidence-grounded principle set is in `PRD.md`. The headline ones the UI bakes in:
 
-Tri-color e-ink (red) means "now" indicators stay quietly emphatic without decoration. The day timeline turns "I have 4 hours of meetings left" into something you *see* without reading.
+1. **Externalize time into the environment** — the unifying principle of CBT for adult ADHD: move regulatory information out of working memory and into a passive cue at the "point of performance" (Barkley, 2012; Solanto, 2011).
+2. **Show time as a depleting resource** — countdown numerals and shrinking spatial elements, not abstract digital wall-clock time. One small RCT directly supports this for ADHD time-management (Janeslätt et al., 2017).
+3. **Externalize the day's structure spatially** — vertical timeline showing where in the day you are, with completed slots distinct from upcoming ones (Barkley, 1997; CHADD, 2024).
+4. **Surface "next," de-emphasize "later"** — time-based prospective memory is the single most consistently impaired PM type in ADHD (Altgassen et al., 2013).
+5. **Escalate salience as deadlines approach** — counteracts temporal discounting; red is reserved for the imminent thing only (Jackson & MacKillop, 2016; Hauser et al., 2015).
+6. **Peripheral resource, not attention demand** — no buzzer, no LED, no notifications. Smartphone notifications worsen inattention even in non-ADHD users (Kushlev et al., 2016); ADHD users habituate faster (Massa & O'Desky, 2012).
+
+Tri-color discipline (paper / ink / red) is itself a salience budget — red marks one thing at a time so it stays meaningful.
 
 ## Project structure
 

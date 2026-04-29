@@ -7,12 +7,54 @@ Owner: Robert Moser (personal project; not for distribution).
 
 ## User principles
 
-These are non-negotiable. Every UI decision traces back to these.
+These are non-negotiable. Every UI decision traces back to these. Each principle has a stated mechanism (what cognitive deficit it targets) and a source. See "Evidence base" at the bottom for caveats — most support is theoretical/clinical-consensus, not direct UI RCT evidence.
 
-1. **Countdown beats clock.** Time-until-next-event is the hero. Wall-clock time is small.
-2. **Time as space.** The right side is a vertical timeline of working hours — remaining day becomes visible territory, not abstract numbers.
-3. **Glanceable from 6+ feet.** Two zones (now/next on the left, today on the right). No icons. No clutter.
-4. **Tri-color discipline.** Paper / ink / red only. Red is reserved for "now" emphasis (current event timer, imminent-meeting indicator).
+1. **Externalize time. Information lives in the environment, not in working memory.**
+   *Targets*: time-based prospective memory failure; ADHD's collapsed temporal horizon.
+   *Source*: Barkley (1997, 2012); Solanto (2011). Core principle of CBT-for-adult-ADHD; the "point of performance" maxim — the cue must be present at the place and moment the action happens.
+
+2. **Show time as a depleting resource, not an abstract numeral.**
+   *Targets*: deficit in perceptual time estimation/reproduction (meta-analytic effect sizes g ≈ 0.5–0.7).
+   *Source*: Barkley (1997, 2012); Janeslätt et al. (2017) — the only direct RCT on visual-time interventions in ADHD (n=38, positive on time-processing and parent-rated daily time management).
+   *Implementation*: countdown numerals AND shrinking spatial elements (depleting bar, vanishing timeline slot). Pure "3:42 PM" digital wall-clock does not satisfy this.
+
+3. **Externalize the day's structure spatially.**
+   *Targets*: weak nonverbal working-memory representation of time horizons ("temporal myopia").
+   *Source*: Barkley (1997, 2012); CHADD (2024) clinical guidance on day planners.
+   *Implementation*: vertical timeline of working hours showing where in the day you are, with completed slots visually distinct from upcoming ones.
+
+4. **Surface "next," de-emphasize "later."**
+   *Targets*: time-based prospective memory — the single most consistently impaired PM type in ADHD across child and adult studies.
+   *Source*: Altgassen et al. (2013); Talbot & Kerns (2014).
+   *Implementation*: hero pixel allocation goes to the next event. Later events appear on the timeline but at reduced visual weight.
+
+5. **Escalate salience as deadlines approach.**
+   *Targets*: temporal/delay discounting — distant events feel weak; ADHD groups choose smaller-sooner over larger-later more often (small-to-medium meta-analytic effects).
+   *Source*: Jackson & MacKillop (2016); Marx et al. (2021); Sonuga-Barke (2003) delay aversion model.
+   *Implementation*: imminent-event indicator (red, larger, higher contrast) triggers as a meeting approaches. Non-imminent events stay in ink (calm).
+
+6. **Be a peripheral resource, not an attention demand.**
+   *Targets*: notifications worsen inattention/hyperactivity even in non-ADHD users; ADHD users habituate to repetitive notifications faster.
+   *Source*: Kushlev, Proulx, & Dunn (2016); Massa & O'Desky (2012) on impaired visual habituation.
+   *Implementation*: ambient display, glanceable from 6+ feet, no buzzer, no LED, no audio. The user encounters information passively.
+
+7. **Live in one fixed place to act as a context cue.**
+   *Targets*: leverages context-stable cue→action association (Barkley's "point of performance"); a device that always lives in the same spot becomes part of the prospective-memory scaffold, not just an information source.
+   *Source*: Barkley (2012). Convergent with habit research (Wood & Neal, 2007).
+   *Implementation*: form factor and mounting (windowsill, desk corner) presume one stable home location.
+
+8. **Reserve high-salience signals for the single most imminent thing.**
+   *Targets*: ADHD shows altered salience processing — too many "high-salience" elements compete and the actually-important one loses.
+   *Source*: Hauser et al. (2015).
+   *Implementation*: red is used ONLY for the active countdown / imminent-event marker. Never decorative. Tri-color discipline (paper / ink / red) is itself a salience budget.
+
+## Anti-patterns (do NOT add these — they have counter-evidence)
+
+- **No push notifications, alarms, or audible beeps.** Smartphone notifications increase inattention/hyperactivity symptoms even in neurotypical users (Kushlev et al., 2016); ADHD users habituate to repetitive cues faster (Massa & O'Desky, 2012). Ambient display is the explicit alternative.
+- **No "always show full week with equal weight."** Equal-weight future events compete with the imminent one and reduce its salience — temporal discounting working *against* the user (Sonuga-Barke, 2003).
+- **No built-in Pomodoro / fixed time-boxing as default.** Clinician-popular but lacks high-quality RCT evidence in ADHD populations. If added later (parking lot), make it opt-in, not default.
+- **No "tap to see status."** Any required interaction gates a prospective-memory event. The cue must be passively encountered (Barkley, 2012).
+- **No uniform color/motion/size escalation across multiple elements.** Reserve escalation for the single most imminent item (Hauser et al., 2015).
 
 ## Behavior
 
@@ -64,11 +106,43 @@ These are non-negotiable. Every UI decision traces back to these.
 
 - **Multiple users / multi-tenant**: single user, single device. No accounts beyond the owner's Google login.
 - **Bidirectional editing**: read-only calendar. Don't add the ability to create/edit events from the device.
-- **Notifications / alarms**: the whole point is *passive glanceability*. No buzzer, no LED, no ping.
+- **Notifications / alarms**: see Anti-patterns. Passive ambient display is the deliberate alternative.
 - **Always-online cloud service**: render server runs on the user's own machine (laptop or Pi). Not deploying a SaaS.
 - **Color screen / animations**: tri-color e-ink is the medium. No backlight, no refresh-flash entertainment.
 - **Apple Calendar / Outlook**: Google Calendar only for v1.
 
+## Evidence base
+
+Honest scoping of how grounded these principles actually are:
+
+- **Strong**: ADHD time-perception and prospective-memory deficits are robustly replicated across meta-analyses (Zheng et al., 2022; Nejati & Yazdani, 2024; Altgassen et al., 2013). The general principle of "externalize executive function to the environment" is core to evidence-based CBT for adult ADHD (Safren et al., 2010; Solanto et al., 2010).
+- **Moderate**: Visual time externalization (Time Timer-style) has one small RCT in ADHD children (Janeslätt et al., 2017, n=38) plus strong clinical-consensus support. The widely-cited "27% on-task improvement" Time Timer marketing claim does **not** appear in indexed peer review.
+- **Theoretical / mechanistic**: Most of the specific UI choices (countdown vs clock, vertical timeline, red-for-imminent) are downstream applications of Barkley's executive-function theory (1997, 2012) rather than tested in their own UI-comparison RCTs.
+
+What this means for product decisions: when a principle conflicts with another goal (e.g., "more visible later events would be nice"), defer to the principle, but don't pretend the literature dictates a specific pixel layout. The literature dictates direction; the design dictates form.
+
+## References
+
+Barkley, R. A. (1997). Behavioral inhibition, sustained attention, and executive functions: Constructing a unifying theory of ADHD. *Psychological Bulletin*, 121(1), 65–94.
+Barkley, R. A. (2012). *Executive Functions: What They Are, How They Work, and Why They Evolved.* Guilford Press.
+Altgassen, M., Kretschmer, A., & Schnitzspahn, K. M. (2013). Time-based prospective memory in adults with ADHD. *PLOS ONE*, 8(3), e58338.
+CHADD (2024). Time Management and ADHD; Remembering the Future. chadd.org.
+Hauser, T. U., et al. (2015). Altered salience processing in ADHD. *Human Brain Mapping*, 36(11), 4541–4551.
+Jackson, J. N. S., & MacKillop, J. (2016). ADHD and monetary delay discounting: A meta-analysis. *Biological Psychiatry: CNNI*, 1(4), 316–325.
+Janeslätt, G., Kottorp, A., & Granlund, M. (2017). Effectiveness of time-related interventions in children with ADHD aged 9–15 years: a randomized controlled study. *European Child & Adolescent Psychiatry*, 27(3), 329–342.
+Kushlev, K., Proulx, J., & Dunn, E. W. (2016). "Silence Your Phones": Smartphone notifications increase inattention and hyperactivity symptoms. *Proceedings of CHI 2016*, 1011–1020.
+Marx, I., Hacker, T., Yu, X., Cortese, S., & Sonuga-Barke, E. (2021). ADHD and the choice of small immediate over larger delayed rewards: A comparative meta-analysis. *Journal of Attention Disorders*, 25(2), 171–187.
+Massa, J., & O'Desky, I. H. (2012). Impaired visual habituation in adults with ADHD. *Journal of Attention Disorders*, 16(7), 553–561.
+Nejati, V., & Yazdani, S. (2024). Time-perception deficits in ADHD: A systematic review and meta-analysis. *Developmental Neuropsychology*, 49(1).
+Safren, S. A., et al. (2010). Cognitive behavioral therapy vs relaxation with educational support for medication-treated adults with ADHD and persistent symptoms. *JAMA*, 304(8), 875–880.
+Solanto, M. V., et al. (2010). Efficacy of meta-cognitive therapy for adult ADHD. *American Journal of Psychiatry*, 167(8), 958–968.
+Solanto, M. V. (2011). *Cognitive-Behavioral Therapy for Adult ADHD: Targeting Executive Dysfunction.* Guilford Press.
+Sonuga-Barke, E. J. S. (2003). The dual pathway model of AD/HD. *Neuroscience and Biobehavioral Reviews*, 27(7), 593–604.
+Talbot, K. D. S., & Kerns, K. A. (2014). Event- and time-triggered remembering in children with ADHD. *Journal of Experimental Child Psychology*, 127, 126–143.
+Zheng, Q., et al. (2022). Time perception deficits in children and adolescents with ADHD: A meta-analysis. *Journal of Attention Disorders*, 26(2), 267–281.
+Wood, W., & Neal, D. T. (2007). A new look at habits and the habit-goal interface. *Psychological Review*, 114(4), 843–863.
+
 ## Change log
 
 - 2026-04-29: Initial PRD seeded from existing code and `eink-calendar/README.md`. Captures current behavior, not future direction.
+- 2026-04-29: User principles rewritten to be evidence-grounded — replaced the original three intuition-based principles with eight principles, each tied to a cognitive deficit and a source. Added Anti-patterns section with counter-evidence citations. Added Evidence base section noting honest scoping (most principles are theoretical/clinical-consensus, not direct UI RCT). Added References section.
