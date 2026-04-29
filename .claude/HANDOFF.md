@@ -23,11 +23,27 @@ The product README's "order of operations" is the sequence:
 5. Google OAuth setup → live calendar test
 6. Power-up test on real device
 
-**UI work to consider against the new evidence-grounded principles** (see `PRD.md`):
-- Current `index.html` has "countdown" and timeline. Does it explicitly de-emphasize "later" events relative to "next"? (Principle 4)
-- Is salience escalation tied to time-until-event? Currently `imminent` state triggers when `minutesUntil < 30` — that's a hardcoded threshold; check whether it should be configurable. (Principle 5)
-- "Time as depleting resource" — current countdown is numeric. Consider whether a shrinking visual element (bar, vanishing slot on the timeline) should accompany it. (Principle 2)
-None of these are bugs; they're design audits worth doing once you can see the rendered PNG and assess.
+**UI design audit completed against the eight principles. Findings:**
+
+Two real bugs logged in `BUGS.md`:
+- `PALETTE-RED-LEAK` — `#6B645A` quantizes to red, breaking Principle 8 (reserve red for one thing). Visible in any rendered PNG.
+- `IMMINENT-NOOP` — `.next-countdown.imminent` CSS does nothing visually. Breaks Principle 5 in the most critical 5-min window.
+
+Design gaps (not bugs, future work):
+- **Past events look identical to upcoming events on the timeline** — Principle 3 partial. Add `"past"` state in `derive_view_data` (`render.py:166-177`) + dimmed CSS for `.event.past`.
+- **No "depleting" visual element** — Principle 2 partial. Numeric countdown alone doesn't convey "time as depleting resource." Consider a draining bar inside `.next-block` whose width tracks `(minutesUntil / windowMinutes)`.
+- **All future events on timeline are equal weight** — Principle 4 partial. Apply opacity decay or strip titles past T+2h horizon in `renderTimeline()` (`index.html:373-391`).
+
+What the UI gets right (verified by audit):
+- Two-tier escalation architecture (.event.imminent at 30 min + .next-countdown.imminent at 5 min) is structurally correct, even though the leaf is broken.
+- 92px red NEXT countdown vs 32px ink NOW title is the right pixel allocation per Altgassen et al. (next/prospective beats current/in-progress).
+- Skipping all-day events in `render.py` is correct.
+
+**Suggested order for the next session:**
+1. Fix `PALETTE-RED-LEAK` first — single search-replace in `index.html`, immediate large visual improvement, plus update `.claude/hooks/check-palette.sh` allowlist. Then re-render and confirm ink > red pixel count.
+2. Fix `IMMINENT-NOOP` — pick a visual treatment for the <5 min state.
+3. Tackle the design gaps in priority order (past events → depleting element → future-event decay).
+4. Then tackle `PNG-DECODE-STUB` and `BLIT-PLACEHOLDER` when hardware is in hand.
 
 ## Parking Lot
 - Render server deployment to a Pi or Cloudflare Worker (so calendar updates when laptop is closed)
