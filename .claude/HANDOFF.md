@@ -5,12 +5,17 @@ Last updated: 2026-04-29
 ## Last Session
 1. Project infrastructure set up (CLAUDE.md, review agents, enforcement hooks, tracking files, commands).
 2. Render pipeline verified end-to-end.
-3. PRD rewritten to be evidence-grounded — eight cognitive principles with citations + anti-patterns + honest evidence-strength scoping. Literature synthesis saved to project memory.
-4. Fixed `PALETTE-RED-LEAK` — `#6B645A` was quantizing to red because of RGB-distance to ink vs red. Replaced with `#4A4540`.
-5. Added Principles 9 and 10 to the PRD: panel-resolution minimums (≥18px body, ≥16px CAPS labels with ≥0.1em tracking, ≥28px headlines, ≥92px hero, no strokes <2px, weight floor 500) and Teenage Engineering visual language (one mono family for all numerals, ALL CAPS labels, 6px corner radius, no shadows/gradients).
-6. **Full UI redesign of `eink-calendar/ui/index.html` to match Principles 9 + 10.** Two-zone layout (504px NEXT hero + 276px today rail), JetBrains Mono numerals via Google Fonts, Inter labels in ALL CAPS, three escalation tiers for the next event (default → depletion-bar at <30 min → full red panel at <5 min). Past events show as dashed outlines (closes the past-event-dimming gap). Now-marker is a 12×40 red wedge on the rail's right edge — never crosses event text. Verified across three scenarios (standard, imminent at 3 min, late afternoon with past events).
-7. Replaced `Image.quantize` with a saturation-aware classifier in `render.py` so anti-aliased text edges land in ink, not red. Fixed `document.fonts.ready` wait so webfonts load before screenshot.
-8. Closed BUGS: `IMMINENT-NOOP` and `PALETTE-RED-LEAK`.
+3. PRD rewritten to be evidence-grounded — eight cognitive principles with citations.
+4. Fixed `PALETTE-RED-LEAK` — `#6B645A` was quantizing to red.
+5. Added Principles 9 and 10 to the PRD (panel-resolution minimums + TE visual language).
+6. First UI redesign with two-zone layout (504px NEXT hero + 276px today rail), JetBrains Mono numerals, three salience tiers, past-event dimming.
+7. Replaced `Image.quantize` with a saturation-aware classifier so anti-aliased text edges land in ink.
+8. Researched ADHD time-blindness literature deeply; user pushed back that the design was "shallow" — surfaced 8 higher-leverage adds tied to specific cognitive deficits.
+9. Researched partial-refresh capability for the Waveshare 7.5" tri-color panel — discovered GxEPD2 supports `refresh_bw()` (~1-2 sec, no flash) on this controller. Capability sat unused. Saved to memory.
+10. Pushed project to public GitHub: https://github.com/Moser9815/time-blind-reminder
+11. Designed and built a Nothing × TE design-token system; rendered 10 hi-fi concepts at `/tmp/tbr-concepts.html`; user picked concepts 1 (dot matrix hero) and 7 (stacked typography); built 3 variations of each at `/tmp/tbr-variations.html`.
+12. **Second redesign — variation 1B (grid day) is now the production layout.** Doto 240px hero on the left, 8×4 dot-grid on the right (32 cells × 15-min granularity over 8 working hours), salience escalation through cell-border color migration. Three Google Fonts: Doto (hero), Space Mono (technical numerals), Inter (labels). PRD-10 updated to formally allow one display face (Doto) for the hero numeral.
+13. Verified across all three scenarios (standard, imminent, late-afternoon). 3 colors only, ink leads red in all states.
 
 The actual product code (`eink-calendar/`) was already in place — render server, sample data, HTML canvas, firmware skeleton. Hardware not yet assembled.
 
@@ -30,13 +35,19 @@ The product README's "order of operations" is the sequence:
 
 **Resolved this session:**
 - `PALETTE-RED-LEAK`: secondary text quantize-to-red, fixed.
-- `IMMINENT-NOOP`: <5 min escalation now flips the hero to a full red panel.
-- Past-event dimming: `state="past"` in view model + dashed outline CSS.
-- Now-line crossing event titles: removed the line entirely; replaced with a 12×40 red wedge on the rail's right edge that never overlaps text.
+- `IMMINENT-NOOP`: <5 min escalation now flips the hero to a thick red frame; depletion bar visible at <30 min.
+- Past-event dimming: now done by cell-state classification — past cells solid ink, future-event cells outlined with inner-square mark.
+- Now-line crossing event titles: rail concept dropped entirely in 1B redesign — now-cell on the grid is just a red filled cell, no line crossing anything.
 
 **Still open in BUGS.md:**
 - `PNG-DECODE-STUB`: firmware doesn't decode the fetched PNG. Blocker for first power-on. Needs streaming decoder (PNGdec recommended).
 - `BLIT-PLACEHOLDER`: firmware draws placeholder text instead of bitmap. Wires up after PNG-DECODE-STUB.
+
+**Future work surfaced this session (not yet logged as bugs):**
+- Adaptive refresh cadence (5-min adaptive in active windows, 1-min via partial B/W in last 30 min) — needs firmware logic + an HTTP header from the render server hinting `next_refresh_seconds`.
+- Implementation-intentions surfacing (per-event prep checklist parsed from calendar event description).
+- Hyperfocus-aware empty state (large elapsed-time display when next event is >2 hours away).
+- Partial B/W refresh for the hero numeral + depletion bar (per-minute updates without flash). Capability is in GxEPD2's `refresh_bw()` for this exact panel — see memory file.
 
 ## Parking Lot
 - Render server deployment to a Pi or Cloudflare Worker (so calendar updates when laptop is closed)

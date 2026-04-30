@@ -23,62 +23,63 @@ The shape of the result:
 Total canvas: 800 × 480 (the panel's native resolution). Two zones plus a header strip.
 
 ```
-0                                                504  524                       800
-┌─────────────────────────────────────────────────┬────┬─────────────────────────┐ 0
-│  10:37 AM  |  WED · APR 29                      │    │                         │
-├─────────────────────────────────────────────────┤    │  9 AM ───────           │ 72
-│                                                 │    │                         │
-│  NEXT IN                                        │    │  ┌─────────────────┐    │
-│                                                 │    │  │ DESIGN REVIEW … │    │
-│  ┌────────────────────┐                         │    │  └─────────────────┘    │
-│  │                    │                         │    │  11                     │
-│  │      23            │ MIN                     │    │  ┌─────────────────┐    │
-│  │                    │                         │    │  │ STANDUP         │    │
-│  └────────────────────┘                         │    │  └─────────────────┘    │
-│                                                 │    │  ┌─────────────────┐    │
-│  ━━━━━━━━━━━━━━━━━━━━━ ←— depletion bar (red)   │    │  │ LUNCH           │    │
-│                                                 │    │  └─────────────────┘    │
-│  Standup                                        │    │  1 PM                   │
-│  AT 11:00 AM · WITH TEAM-ENG                    │    │  ┌─────────────────┐    │
-│                                                 │    │  │ FOCUS BLOCK — … │   ▌│ ←— now-marker
-│                                                 │    │  └─────────────────┘    │
-│                                                 │    │  3                      │
-│                                                 │    │  ┌─────────────────┐    │
-│                                                 │    │  │ 1:1 WITH ALEX   │    │
-│                                                 │    │  └─────────────────┘    │
-│                                                 │    │  5                      │
-└─────────────────────────────────────────────────┴────┴─────────────────────────┘ 480
-       ←— left zone (NEXT hero) 504px            gap   ←— right rail (today) 276px
+0                                            400 |                              800
+┌─────────────────────────────────────────────────┬─────────────────────────────────┐ 0
+│  10:37 AM                          WED · APR 29 │                                 │
+├─────────────────────────────────────────────────┼─────────────────────────────────┤ 64
+│                                                 │                                 │
+│   ┌───────────────────────┐                     │  :00  ▣  ▣  ◯  ▢  ▢  ▢  ▢  ▢   │
+│   │                       │  ←— red imminent    │  :15  ▣  ▣  ▢  ▢  ▢  ▢  ▢  ▢   │
+│   │                       │      frame (only    │  :30  ▣  ▥  ▢  ▢  ▢  ▢  ▢  ▢   │ ←— ▥ red NOW
+│   │       2 3             │      <30 min)       │  :45  ▣  ▢  ▢  ▢  ▢  ▢  ▢  ▢   │
+│   │       (Doto 240px)    │                     │       9A 10 11 12P 1  2  3  4  │
+│   │                       │                     │   DAY                  0/5 DONE│
+│   └───────────────────────┘                     │                                 │
+│                                                 │                                 │
+│   ━━━━━━━━━━━━━━━━━━━━━━━ ← ink depletion bar  │                                 │
+│   MIN UNTIL STANDUP                             │                                 │
+│   NOW · DESIGN REVIEW WITH SARA · 13 MIN LEFT   │                                 │
+│                                                 │                                 │
+└─────────────────────────────────────────────────┴─────────────────────────────────┘ 480
+   ←— left zone (Doto hero) 400px               ←— right zone (8×4 dot grid) 400px
 ```
 
-Header strip is 72px tall, full canvas width, ink-rule divider at y=72. The left zone holds the NEXT hero countdown + event meta + (optional) depletion bar. The right rail holds the day timeline with hour ticks every 2 hours, event blocks positioned by start time, and a NOW marker on the rail's right edge.
+Layout: 64px header strip, then two equal 400px zones below. The left zone holds the Doto countdown numeral, ink depletion bar, label, and a small NOW line for current event. The right zone is an 8-column × 4-row grid of cells — one cell per 15-minute slot in the working day (8 hours × 4 quarter-hours = 32 cells). Cell states encode time-of-day spatially:
+
+- **Past** — solid ink fill (default `.cell` style)
+- **Now** — red fill (single cell, only one ever lit)
+- **Future-empty** — outlined 2px ink
+- **Future-event** — outlined 2px ink with an 8px-inset filled ink square (occupied)
+- **Future-imminent** — outlined 4px red (the next event, <30 min away)
+- **Future-imminent.alarm** — outlined 8px red (<5 min)
+
+The grid is the day's shape; the hero is the next event's pressure. They reinforce each other — you can see *both* "where in the day am I" and "how much until the next thing" at a single glance.
 
 ## Type scale
 
 | Element | Family | Size | Weight | Case | Color |
 |---------|--------|------|--------|------|-------|
-| Clock numerals | JetBrains Mono | 28px | 500 | — | #1F1B16 (ink) |
+| Clock numerals | Space Mono | 28px | 700 | — | #1F1B16 (ink) |
 | Clock AM/PM | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
 | Date | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
-| "NEXT IN" label | Inter | 18px | 600 | UPPER, 0.18em | #1F1B16 |
-| **Hero countdown** | **JetBrains Mono** | **200px** | **700** | — | **#B83C2C (red)** |
-| Hero unit "MIN" | Inter | 24px | 600 | UPPER, 0.12em | #1F1B16 |
-| Next event title | Inter | 32px | 600 | — | #1F1B16 |
-| Next event meta numerals | JetBrains Mono | 18px | 500 | UPPER, 0.12em | #1F1B16 |
-| Next event meta sans | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
-| Rail hour-tick numerals | JetBrains Mono | 16px | 500 | UPPER, 0.12em | #1F1B16 |
-| Rail hour-tick AM/PM | Inter | 16px | 600 | UPPER, 0.12em | #1F1B16 |
-| Rail event title | Inter | 16px | 600 | UPPER, 0.1em | #1F1B16 |
+| **Hero countdown** | **Doto** | **240px** | **700** | — | **#1F1B16 (ink)** |
+| Hero label "MIN UNTIL X" | Inter | 18px | 600 | UPPER, 0.18em | #1F1B16 |
+| NOW line (current event) | Space Mono | 16px | 700 | UPPER, 0.12em | #1F1B16 |
+| Grid row labels (:00 :15 :30 :45) | Space Mono | 16px | 700 | UPPER, 0.1em | #4A4540 → ink |
+| Grid column labels (9A 10 11 12P …) | Space Mono | 16px | 700 | UPPER, 0.1em | #4A4540 → ink |
+| Grid legend (DAY / 0/5 DONE) | Space Mono | 16px | 700 | UPPER, 0.1em | #4A4540 → ink |
 
 Every value meets PRD-9 floors. No weight below 500. No italics, no serifs.
 
+The hero numeral is **ink**, not red. This matches the partial-refresh constraint — the digit must update per-minute via partial B/W (which can't paint red), so red is reserved for the *static* salience layer (the imminent frame around the hero, the now-cell fill, the imminent-cell border). See `~/.claude/projects/-Users-moserrs-Studio/memory/time_blind_reminder_partial_refresh.md`.
+
 ## Typography family
 
-PRD Principle 10 pairing: **JetBrains Mono** for all numeric content (clock, hero countdown, hour ticks, event-meta times) — `font-feature-settings: "tnum" 1` is on `#canvas` so tabular figures apply by inheritance. **Inter** for labels and event titles, ALL CAPS with letter-spacing ≥0.1em.
+PRD Principle 10 pairing: **Space Mono** for all technical numerals (clock, grid labels) and **Doto** for the single hero countdown numeral — Doto is allowed under PRD-10's "one display face" exception for the screen's primary signal. **Inter** handles all sans labels and event titles, ALL CAPS with letter-spacing ≥0.1em.
 
-Both load via Google Fonts CDN; `render.py` waits on `document.fonts.ready` before screenshotting so the PNG never ships a fallback face. To swap to a paid family (Berkeley Mono, NB Architekt) for production, drop the `<link>` in `index.html` and self-host the woff2.
+All three load via Google Fonts CDN; `render.py` waits on `document.fonts.ready` before screenshotting so the PNG never ships a fallback face. To swap to a paid display face (Berkeley Mono, NB Architekt) for production, drop the `<link>` in `index.html` and self-host the woff2.
 
-Two weights only (500 medium for body/numerals, 600 semibold for labels/titles, 700 bold for the hero numeral). Three colors at design time (ink `#1F1B16`, muted `#4A4540`, red `#B83C2C`); after quantize the muted color snaps to ink, leaving exactly two colors on screen plus the red accent. **Do not use `#6B645A` or any color with smaller RGB-distance to red than to ink** — it will quantize to red and break the salience budget (see `BUGS.md` PALETTE-RED-LEAK).
+Three weights (700 bold for hero + clock, 600 semibold for labels, 500 medium reserved for body — currently unused). Three colors at design time (ink `#1F1B16`, muted `#4A4540`, red `#B83C2C`); after quantize the muted color snaps to ink, leaving exactly two colors on screen plus the red accent. **Do not use `#6B645A` or any color with smaller RGB-distance to red than to ink** — it will quantize to red and break the salience budget (see `BUGS.md` PALETTE-RED-LEAK).
 
 ## Layout grid
 

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+      href="https://fonts.googleapis.com/css2?family=Doto:wght@700&family=Inter:wght@500;600&family=Space+Mono:wght@400;700&display=swap">
 
 <style>
   /* The render canvas is exactly the e-paper resolution.
@@ -30,8 +30,7 @@
     padding: 24px;
   }
 
-  /* Mock device bezel — only visible in browser preview.
-     The renderer ignores it (screenshots #canvas only). */
+  /* Mock device bezel — only visible in browser preview. */
   .bezel {
     background: #2A2724;
     padding: 24px;
@@ -48,6 +47,7 @@
     position: relative;
     overflow: hidden;
     font-feature-settings: "tnum" 1;
+    box-sizing: border-box;
   }
 
   /* ============== Header strip ============== */
@@ -56,34 +56,30 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 72px;
+    height: 64px;
     padding: 0 32px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    justify-content: space-between;
     border-bottom: 2px solid #1F1B16;
     box-sizing: border-box;
   }
   .clock {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Space Mono', monospace;
     font-size: 28px;
-    font-weight: 500;
+    font-weight: 700;
     color: #1F1B16;
   }
   .clock .ampm {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 18px;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-left: 6px;
   }
-  .header-sep {
-    width: 2px;
-    height: 24px;
-    background: #1F1B16;
-  }
   .date {
+    font-family: 'Inter', sans-serif;
     font-size: 18px;
     font-weight: 600;
     color: #1F1B16;
@@ -91,201 +87,186 @@
     text-transform: uppercase;
   }
 
-  /* ============== Left zone: NEXT hero ============== */
-  .next-zone {
+  /* ============== Left zone: Doto hero countdown ============== */
+  .hero-zone {
     position: absolute;
-    top: 72px;
+    top: 64px;
     left: 0;
-    width: 504px;
-    height: 408px;
-    padding: 32px;
+    width: 400px;
+    height: 416px;
+    padding: 24px 32px 28px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  .next-label {
+  .hero-frame {
+    /* The salience-tier red frame. Only red at <30 min and <5 min.
+       Drawn as outset border so partial-B/W updates of the digit
+       inside don't disturb it. */
+    padding: 16px 12px;
+    border: 4px solid transparent;
+    border-radius: 6px;
+    margin: 0 -12px 16px;
+    transition: none;
+  }
+  .hero-frame.imminent { border-color: #B83C2C; border-width: 4px; }
+  .hero-frame.alarm { border-color: #B83C2C; border-width: 8px; }
+
+  .hero-num {
+    font-family: 'Doto', monospace;
+    font-size: 240px;
+    font-weight: 700;
+    line-height: 0.9;
+    color: #1F1B16;
+    text-align: center;
+    letter-spacing: -0.02em;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+  .hero-bar-wrap {
+    height: 8px;
+    margin: 14px 0 12px;
+    overflow: hidden;
+  }
+  .hero-bar {
+    height: 100%;
+    background: #1F1B16;
+    border-radius: 6px;
+    width: 0;
+  }
+  .hero-label {
+    display: flex;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
     font-size: 18px;
     font-weight: 600;
     color: #1F1B16;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    margin-bottom: 16px;
   }
-  .hero {
+  .hero-label-text {
+    /* min-width:0 lets this flex child shrink below its content width
+       so text-overflow:ellipsis actually engages on long event titles. */
+    flex: 1 1 auto;
+    min-width: 0;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hero-now {
     display: flex;
-    align-items: flex-end;
-    gap: 16px;
-    padding: 8px 16px;
-    margin: 0 -16px 12px -16px;
-    border-radius: 6px;
-    /* default: naked numerals on paper */
-  }
-  .hero.imminent {
-    /* <5 min: full red panel, paper numerals — escalation tier 3. */
-    background: #B83C2C;
-  }
-  .hero-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 200px;
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
     font-weight: 700;
-    line-height: 1;
-    color: #B83C2C;
-    font-feature-settings: "tnum" 1, "zero" 1;
-  }
-  .hero.imminent .hero-num {
-    color: #EFEBDF;
-  }
-  .hero-unit {
-    font-size: 24px;
-    font-weight: 600;
     color: #1F1B16;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding-bottom: 24px;
+    margin-top: 16px;
   }
-  .hero.imminent .hero-unit {
-    color: #EFEBDF;
-  }
-  .hero-bar-wrap {
-    /* The depletion bar — visible only at <30 min and >=5 min.
-       The bar's width is the only signal; no track. Bar shrinks
-       as the next event approaches. */
-    height: 6px;
-    margin: 0 0 20px 0;
-    overflow: hidden;
-  }
-  .hero-bar {
-    height: 100%;
-    background: #B83C2C;
-    border-radius: 6px;
-    width: 0;
-  }
-  .next-title {
-    font-size: 32px;
-    font-weight: 600;
-    color: #1F1B16;
-    line-height: 1.1;
-    margin-bottom: 12px;
+  .hero-now-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .next-meta {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1F1B16;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .next-meta .num {
-    font-family: 'JetBrains Mono', monospace;
-    font-feature-settings: "tnum" 1;
-  }
+  .hero-now .muted { color: #4A4540; }
 
-  /* ============== Right rail: today timeline ============== */
-  .rail {
+  /* ============== Right zone: dot-grid day ============== */
+  .grid-zone {
     position: absolute;
-    top: 72px;
+    top: 64px;
     right: 0;
-    width: 276px;
-    height: 408px;
-    padding: 24px 24px 24px 16px;
+    width: 400px;
+    height: 416px;
+    padding: 24px 32px 24px 16px;
     box-sizing: border-box;
     border-left: 2px solid #1F1B16;
-    overflow: hidden;
-  }
-
-  .hour-tick {
-    position: absolute;
-    left: 16px;
-    width: 220px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1F1B16;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    line-height: 1;
-    /* baseline-aligns to the y-position of the hour */
-    transform: translateY(-8px);
-  }
-  .hour-tick .num {
-    font-family: 'JetBrains Mono', monospace;
-    font-feature-settings: "tnum" 1;
-    margin-right: 4px;
-  }
-  .hour-tick::after {
-    content: "";
-    position: absolute;
-    left: 56px;
-    right: 0;
-    top: 8px;
-    height: 2px;
-    background: #1F1B16;
-  }
-
-  .event {
-    position: absolute;
-    left: 56px;
-    right: 16px;
-    padding: 8px 10px;
-    border-radius: 6px;
-    box-sizing: border-box;
-    color: #1F1B16;
-    background: #EFEBDF;
-    border: 2px solid #1F1B16;
-    overflow: hidden;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
   }
-  .event-title {
-    /* Title gets the truncation. text-overflow: ellipsis only works on
-       block-level elements, so we wrap in a span and apply here. */
-    display: block;
-    width: 100%;
+
+  .grid {
+    display: grid;
+    grid-template-columns: 32px repeat(8, 1fr);
+    gap: 6px;
+  }
+  .grid-row-label {
+    font-family: 'Space Mono', monospace;
     font-size: 16px;
-    font-weight: 600;
-    line-height: 1;
+    font-weight: 700;
+    color: #4A4540;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    text-align: right;
+    align-self: center;
+    padding-right: 4px;
   }
-  .event.past {
-    /* Completed events: outlined-only, dashed. Visually subordinate.
-       Color #4A4540 quantizes to ink — paired with the dash, reads as past. */
-    border: 2px dashed #4A4540;
-    color: #4A4540;
+  .cell {
+    height: 36px;
+    background: #1F1B16;          /* default: filled (past) */
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: relative;
+  }
+  .cell.future {
     background: transparent;
+    border: 2px solid #1F1B16;
   }
-  .event.imminent {
-    /* Next event within 30 min: full ink fill, paper text. */
+  .cell.future-event {
+    /* Future event: outlined cell with a smaller filled ink square inside.
+       Distinguishes "occupied" cells from empty future cells without
+       spending the red salience budget. */
+    background: transparent;
+    border: 2px solid #1F1B16;
+  }
+  .cell.future-event::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
     background: #1F1B16;
-    color: #EFEBDF;
-    border-color: #1F1B16;
+    border-radius: 2px;
   }
-  .event.current {
-    /* Right now: red border (the only red on the rail). */
-    border: 3px solid #B83C2C;
-    background: #EFEBDF;
-    color: #1F1B16;
+  .cell.future-imminent {
+    background: transparent;
+    border: 4px solid #B83C2C;    /* imminent (<30 min): red border */
+  }
+  .cell.future-imminent.alarm {
+    border-width: 8px;            /* <5 min: thicker red */
+  }
+  .cell.now {
+    background: #B83C2C;          /* current cell: red fill */
   }
 
-  .now-marker {
-    /* Red wedge on the rail's right edge at y=now.
-       Sits in the rail's right padding so it never crosses event text.
-       Width chosen to be glanceable from across a room without taking
-       horizontal space from the event track. PRD-9's 40x40 floor applies
-       to glanceable regions; this is a structural indicator (data-coded
-       stroke), explicitly carved out by Principle 9 in the PRD. */
-    position: absolute;
-    right: 0;
-    width: 12px;
-    height: 40px;
-    background: #B83C2C;
-    transform: translateY(-20px);
-    border-radius: 6px 0 0 6px;
+  .grid-cols {
+    display: grid;
+    grid-template-columns: 32px repeat(8, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #4A4540;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .grid-legend {
+    margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #4A4540;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 </style>
 </head>
@@ -297,26 +278,25 @@
     <!-- Header: clock + date -->
     <div class="header">
       <span class="clock"><span id="clock-time">10:37</span><span class="ampm" id="clock-ampm">AM</span></span>
-      <span class="header-sep"></span>
-      <span class="date" id="clock-date">Wed · Apr 29</span>
+      <span class="date" id="clock-date">WED · APR 29</span>
     </div>
 
-    <!-- Left zone: NEXT hero -->
-    <div class="next-zone">
-      <div class="next-label" id="next-label">Next in</div>
-      <div class="hero" id="hero">
-        <span class="hero-num" id="hero-num">23</span>
-        <span class="hero-unit" id="hero-unit">Min</span>
+    <!-- Left zone: Doto hero countdown -->
+    <div class="hero-zone">
+      <div class="hero-frame" id="hero-frame">
+        <div class="hero-num" id="hero-num">23</div>
       </div>
       <div class="hero-bar-wrap" id="hero-bar-wrap">
         <div class="hero-bar" id="hero-bar" style="width: 0%;"></div>
       </div>
-      <div class="next-title" id="next-title">Standup</div>
-      <div class="next-meta" id="next-meta">at 11:00 · team-eng</div>
+      <div class="hero-label">
+        <span class="hero-label-text" id="hero-label">MIN UNTIL STANDUP</span>
+      </div>
+      <div class="hero-now"><span class="hero-now-text" id="hero-now"></span></div>
     </div>
 
-    <!-- Right rail: today's timeline -->
-    <div class="rail" id="rail">
+    <!-- Right zone: 8-col × 4-row dot grid -->
+    <div class="grid-zone" id="grid-zone">
       <!-- Populated by JS -->
     </div>
 
@@ -349,137 +329,143 @@ const SAMPLE = {
 };
 
 function render(data) {
-  // Header
-  const h = data.now.hour;
-  const m = data.now.minute;
+  // Header — clock + date
+  const h = data.now.hour, m = data.now.minute;
   const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
   document.getElementById("clock-time").textContent =
     `${h12}:${String(m).padStart(2, "0")}`;
   document.getElementById("clock-ampm").textContent = h >= 12 ? "PM" : "AM";
-  // Date in CAPS, abbreviated. e.g. "WED · APR 29"
   document.getElementById("clock-date").textContent =
     data.date.replace(",", " ·").toUpperCase();
 
-  // NEXT hero
+  // Hero countdown
+  const hero = document.getElementById("hero-frame");
+  const heroNum = document.getElementById("hero-num");
+  const heroLabel = document.getElementById("hero-label");
+  const bar = document.getElementById("hero-bar");
+  const heroNow = document.getElementById("hero-now");
+
+  hero.classList.remove("imminent", "alarm");
+  bar.style.width = "0%";
+
   if (data.next) {
-    document.getElementById("next-label").textContent = "Next in";
-    document.getElementById("hero-num").textContent = String(data.next.minutesUntil);
-    document.getElementById("hero-unit").textContent = "Min";
-    document.getElementById("next-title").textContent = data.next.title;
-    const startStr = formatHourParts(data.next.startHour, data.next.startMinute);
-    // Build "AT 11:00 PM · TEAM-ENG" with the numeric portion wrapped in
-    // a mono span. innerHTML is safe here — startStr.html is engineered,
-    // subtitle is escaped via textContent below.
-    const meta = document.getElementById("next-meta");
-    meta.innerHTML = `AT <span class="num">${startStr.numHtml}</span> ${startStr.unit}`;
-    if (data.next.subtitle) {
-      meta.appendChild(document.createTextNode(" · "));
-      const subSpan = document.createElement("span");
-      subSpan.textContent = data.next.subtitle;
-      meta.appendChild(subSpan);
-    }
+    heroNum.textContent = String(data.next.minutesUntil);
+    heroLabel.textContent = `MIN UNTIL ${data.next.title.toUpperCase()}`;
 
-    // Imminent state (<5 min): hero block flips to red panel.
-    document.getElementById("hero").classList.toggle("imminent", data.next.minutesUntil < 5);
-
-    // Depletion bar visible at <30 min and >=5 min. Width = (minutesUntil / 30) * 100%.
-    const bar = document.getElementById("hero-bar");
-    if (data.next.minutesUntil < 30 && data.next.minutesUntil >= 5) {
+    // Tier 2: <30 min → red frame + ink depletion bar
+    // Tier 3: <5 min → thick red frame, no bar (alarm has fired)
+    if (data.next.minutesUntil < 5) {
+      hero.classList.add("alarm");
+    } else if (data.next.minutesUntil < 30) {
+      hero.classList.add("imminent");
       bar.style.width = Math.max(0, Math.min(100, (data.next.minutesUntil / 30) * 100)) + "%";
-    } else {
-      bar.style.width = "0%";
     }
   } else {
-    // Empty-state: minimal "done for today" reading. Out of scope per PRD parking lot —
-    // this is a placeholder until the proper rest-view ships.
-    document.getElementById("next-label").textContent = "Done";
-    document.getElementById("hero-num").textContent = "—";
-    document.getElementById("hero-unit").textContent = "";
-    document.getElementById("next-title").textContent = "No more meetings today";
-    document.getElementById("next-meta").textContent = "";
-    document.getElementById("hero").classList.remove("imminent");
-    document.getElementById("hero-bar").style.width = "0%";
+    heroNum.textContent = "—";
+    heroLabel.textContent = "DONE FOR TODAY";
   }
 
-  renderRail(data);
+  // NOW line — current event title (small)
+  if (data.current) {
+    heroNow.innerHTML = `<span class="muted">NOW · </span>${data.current.title.toUpperCase()} · <span class="muted">${data.current.minutesLeft} MIN LEFT</span>`;
+  } else {
+    heroNow.innerHTML = `<span class="muted">FREE · NEXT IN ${data.next ? data.next.minutesUntil + " MIN" : "—"}</span>`;
+  }
+
+  renderGrid(data);
 }
 
-function formatHour(h, m) {
-  const period = h >= 12 ? "PM" : "AM";
-  const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
-  return `${h12}:${String(m).padStart(2, "0")} ${period}`;
-}
-
-// Returns the parts of a formatted time so the numeric portion can be
-// rendered in a mono span and the unit (AM/PM) in the label sans.
-function formatHourParts(h, m) {
-  const period = h >= 12 ? "PM" : "AM";
-  const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
-  return {
-    numHtml: `${h12}:${String(m).padStart(2, "0")}`,
-    unit: period,
-  };
-}
-
-function renderRail(data) {
-  const rail = document.getElementById("rail");
-  rail.innerHTML = "";
+function renderGrid(data) {
+  const zone = document.getElementById("grid-zone");
+  zone.innerHTML = "";
 
   const start = data.workingHours.start;
   const end = data.workingHours.end;
-  // Rail content area: 24px top padding, 24px bottom padding inside the
-  // 408px-tall rail. Map [start..end] linearly to that range.
-  const top = 24;
-  const bottom = 24;
-  const usable = 408 - top - bottom; // 360px
-  const hours = end - start;
-  const pxPerHour = usable / hours;
-  const yFor = (h, m) => top + ((h + m/60) - start) * pxPerHour;
+  const cols = end - start;        // 8 hours = 8 columns
+  const rows = 4;                  // 15-min increments × 4 = 1 hour per column
 
-  // Hour ticks every 2 hours: start, start+2, ..., end (inclusive).
-  // Show AM/PM unit on first tick of each period (so the AM→PM transition
-  // is always visible).
-  let prevPeriod = null;
-  for (let h = start; h <= end; h += 2) {
-    const tick = document.createElement("div");
-    tick.className = "hour-tick";
-    tick.style.top = yFor(h, 0) + "px";
-    const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
-    const period = h >= 12 ? "PM" : "AM";
-    const num = document.createElement("span");
-    num.className = "num";
-    num.textContent = String(h12);
-    tick.appendChild(num);
-    if (period !== prevPeriod) {
-      tick.appendChild(document.createTextNode(period));
+  // Build the grid as 4 row-groups (each row = a 15-minute offset).
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  for (let r = 0; r < rows; r++) {
+    const rowLabel = document.createElement("div");
+    rowLabel.className = "grid-row-label";
+    rowLabel.textContent = `:${String(r * 15).padStart(2, "0")}`;
+    grid.appendChild(rowLabel);
+
+    for (let c = 0; c < cols; c++) {
+      const cellH = start + c;
+      const cellM = r * 15;
+      const cell = document.createElement("div");
+      cell.className = "cell " + classifyCell(cellH, cellM, data);
+      grid.appendChild(cell);
     }
+  }
+  zone.appendChild(grid);
+
+  // Hour labels along the bottom of the grid.
+  const colsRow = document.createElement("div");
+  colsRow.className = "grid-cols";
+  const spacer = document.createElement("span");
+  colsRow.appendChild(spacer);
+  let prevPeriod = null;
+  for (let c = 0; c < cols; c++) {
+    const h = start + c;
+    const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+    const period = h >= 12 ? "P" : "A";
+    const lbl = document.createElement("span");
+    lbl.textContent = period !== prevPeriod ? `${h12}${period}` : String(h12);
     prevPeriod = period;
-    rail.appendChild(tick);
+    colsRow.appendChild(lbl);
   }
+  zone.appendChild(colsRow);
 
-  // Events
-  for (const ev of data.events) {
-    const startY = yFor(ev.startH, ev.startM);
-    const endY = yFor(ev.endH, ev.endM);
-    const div = document.createElement("div");
-    div.className = "event " + (ev.state || "normal");
-    div.style.top = startY + "px";
-    // Enforce Principle 9 element-min: at least 40px tall.
-    div.style.height = Math.max(40, endY - startY) + "px";
-    // Title in a span so text-overflow: ellipsis works.
-    const title = document.createElement("span");
-    title.className = "event-title";
-    title.textContent = ev.title;
-    div.appendChild(title);
-    rail.appendChild(div);
+  // Legend
+  const legend = document.createElement("div");
+  legend.className = "grid-legend";
+  legend.innerHTML = "<span>DAY</span><span>" +
+    countDoneEvents(data.events) + "/" + data.events.length + " DONE</span>";
+  zone.appendChild(legend);
+}
+
+// Returns the cell's CSS class suffix based on the cell's time and the data.
+function classifyCell(cellH, cellM, data) {
+  const cellStart = cellH * 60 + cellM;
+  const cellEnd = cellStart + 15;
+  const nowMin = data.now.hour * 60 + data.now.minute;
+
+  // Past cell — the default `.cell` style (solid ink fill) is already
+  // correct for past cells, so we return an empty class to use that default.
+  if (cellEnd <= nowMin) {
+    return "";
   }
+  // Now cell — contains the current minute
+  if (cellStart <= nowMin && nowMin < cellEnd) {
+    return "now";
+  }
+  // Future cell — find any FUTURE event that overlaps. Skip past and
+  // current events that happen to bleed into the future portion of a
+  // cell (e.g. a current 10:00-10:50 meeting overlapping the 10:45-11:00
+  // cell — that cell's user-relevant content is "what's next", which is
+  // empty).
+  const overlap = data.events.find(e =>
+    (e.state === "normal" || e.state === "imminent") &&
+    (e.startH * 60 + e.startM) < cellEnd &&
+    (e.endH * 60 + e.endM) > cellStart
+  );
+  if (overlap) {
+    if (overlap.state === "imminent") {
+      return data.next && data.next.minutesUntil < 5
+        ? "future-imminent alarm"
+        : "future-imminent";
+    }
+    return "future-event";
+  }
+  return "future";
+}
 
-  // NOW marker — red rectangle on the rail's right edge.
-  const nowY = yFor(data.now.hour, data.now.minute);
-  const marker = document.createElement("div");
-  marker.className = "now-marker";
-  marker.style.top = nowY + "px";
-  rail.appendChild(marker);
+function countDoneEvents(events) {
+  return events.filter(e => e.state === "past").length;
 }
 
 render(SAMPLE);
