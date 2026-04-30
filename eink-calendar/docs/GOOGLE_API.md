@@ -1,6 +1,10 @@
-# Google Calendar API setup
+# Google Calendar API setup (OAuth — legacy path)
 
-The render server uses OAuth 2.0 with a refresh token to read your calendar. One-time setup, ~30 minutes.
+> **Recommended path for most users**: deploy the Apps Script web app instead of the OAuth flow described here. See `eink-calendar/apps_script/README.md`. The Apps Script approach doesn't require a GCP project, which is the right answer if your Workspace domain locks down personal GCP project creation.
+>
+> This document is kept as a fallback for users who want direct OAuth access.
+
+The render server can use OAuth 2.0 with a refresh token to read your calendar. One-time setup, ~30 minutes.
 
 ## Step 1 — Create a Google Cloud project
 

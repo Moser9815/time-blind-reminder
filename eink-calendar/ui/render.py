@@ -55,17 +55,62 @@ def load_config():
         "calendars": ["primary"],
         "working_hours": {"start": 9, "end": 17},
         "refresh_minutes": 15,
+        # Set apps_script_url to the URL of a deployed Apps Script web app
+        # (see eink-calendar/apps_script/) to use that as the live source.
+        # If unset, we fall back to OAuth (requires credentials.json + token.json).
+        "apps_script_url": "",
+        "apps_script_token": "",
     }
 
 
 def fetch_live_events(config):
-    """Fetch today's events from Google Calendar. Returns the same shape as sample_data.json."""
+    """Fetch today's events. Returns the same shape as sample_data.json.
+
+    Source dispatch:
+      1. If config["apps_script_url"] is set → fetch JSON from that URL
+         (the Apps Script feed described in eink-calendar/apps_script/).
+      2. Else → fall back to direct OAuth against the Calendar API (legacy).
+    """
+    if config.get("apps_script_url"):
+        return _fetch_via_apps_script(
+            config["apps_script_url"],
+            config.get("apps_script_token", ""),
+        )
+    return _fetch_via_oauth(config)
+
+
+def _fetch_via_apps_script(url, token=""):
+    """Fetch the JSON feed from a deployed Apps Script web app."""
+    import urllib.parse
+    import urllib.request
+
+    fetch_url = url
+    if token:
+        sep = "&" if "?" in url else "?"
+        fetch_url = f"{url}{sep}token={urllib.parse.quote(token)}"
+
+    try:
+        with urllib.request.urlopen(fetch_url, timeout=15) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        sys.exit(f"Apps Script fetch failed ({fetch_url!r}): {e}")
+
+    if isinstance(payload, dict) and payload.get("error"):
+        sys.exit(f"Apps Script returned error: {payload['error']}. "
+                 f"Check apps_script_token in config.json matches SECRET_TOKEN in Code.gs.")
+
+    return payload
+
+
+def _fetch_via_oauth(config):
+    """Legacy OAuth path. Requires a GCP project + token.json."""
     from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
     from googleapiclient.discovery import build
 
     if not TOKEN_PATH.exists():
-        sys.exit("No token.json — run `python render.py --auth` first.")
+        sys.exit("No token.json. Either set apps_script_url in config.json "
+                 "(see eink-calendar/apps_script/) or run `python render.py --auth`.")
 
     creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), [
         "https://www.googleapis.com/auth/calendar.readonly"
