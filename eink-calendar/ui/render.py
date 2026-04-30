@@ -116,9 +116,20 @@ def fetch_live_events(config):
     }
 
 
-def derive_view_data(raw):
-    """Take the raw event data and derive the layout-ready view model."""
-    now = dt.datetime.fromisoformat(raw["now"])
+def derive_view_data(raw, override_now=None):
+    """Take the raw event data and derive the layout-ready view model.
+
+    `override_now` (datetime or None): if provided, replaces the `now` in raw.
+    Used by the simulator's time-warp feature to render as if it were a
+    different time of day. Only the TIME portion of override_now is used —
+    the date is always taken from raw["now"] so that fixed-date sample data
+    stays aligned with the override regardless of today's actual date.
+    """
+    if override_now is not None:
+        canonical_date = dt.datetime.fromisoformat(raw["now"]).date()
+        now = dt.datetime.combine(canonical_date, override_now.time())
+    else:
+        now = dt.datetime.fromisoformat(raw["now"])
     events = []
     for e in raw["events"]:
         start = dt.datetime.fromisoformat(e["start"].replace("Z", ""))
@@ -127,7 +138,8 @@ def derive_view_data(raw):
 
     # Strip timezone info if present so naive comparisons work
     if events and events[0]["_start"].tzinfo:
-        now = now.replace(tzinfo=events[0]["_start"].tzinfo)
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=events[0]["_start"].tzinfo)
 
     current = next((e for e in events if e["_start"] <= now < e["_end"]), None)
     upcoming = [e for e in events if e["_start"] > now]
@@ -169,7 +181,8 @@ def derive_view_data(raw):
         state = "normal"
         if e is current:
             state = "current"
-        elif e["_end"] < now:
+        elif e["_end"] <= now:
+            # An event whose end equals now is past — it just ended this minute.
             state = "past"
         elif e is next_event and view["next"] and view["next"]["minutesUntil"] < 30:
             state = "imminent"

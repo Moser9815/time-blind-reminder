@@ -17,6 +17,8 @@ Last updated: 2026-04-29
 12. **Second redesign — variation 1B (grid day) is now the production layout.** Doto 240px hero on the left, 8×4 dot-grid on the right (32 cells × 15-min granularity over 8 working hours), salience escalation through cell-border color migration. PRD-10 updated to formally allow one display face (Doto) for the hero numeral.
 13. Verified across all three scenarios (standard, imminent, late-afternoon). 3 colors only, ink leads red in all states.
 14. Switched the technical mono family from Space Mono to JetBrains Mono (chunkier strokes at small sizes) and bumped all 16px text to 18px — at panel resolution Space Mono's thin glyphs were losing detail through quantization. Re-rendered all three scenarios; small text is now visibly cleaner.
+15. **Built a digital simulator** — browser-based preview server at `/`. Auto-refresh, time-warp slider (scrub through the workday), source toggle (sample / live), quick-jump buttons. `?at=HH:MM` query param re-renders at any simulated time; `?source=live` switches to Google Calendar (requires OAuth setup). Stands in for hardware while it's in transit. Use the `/simulator` slash command (or `python server.py` from `ui/`).
+16. Fixed an edge case in `derive_view_data`: events whose end equals `now` now correctly classify as past (changed `<` to `<=`). Surfaced by the simulator scrubbing to exactly the boundary of an event.
 
 The actual product code (`eink-calendar/`) was already in place — render server, sample data, HTML canvas, firmware skeleton. Hardware not yet assembled.
 
