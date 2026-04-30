@@ -1,3 +1,7 @@
+---
+description: Start the browser-based simulator at localhost:8000 — time-warp slider, live/sample toggle, auto-refresh
+---
+
 Run the digital simulator (browser-based preview server) so the user can iterate on the UI and Google Calendar integration without hardware.
 
 1. `cd eink-calendar/ui`

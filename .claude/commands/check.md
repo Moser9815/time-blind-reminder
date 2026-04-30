@@ -1,3 +1,7 @@
+---
+description: Health check — Python syntax, JSON validity, sample render, PlatformIO build, pin drift, git status, hook executability
+---
+
 Health check the project. Run these in parallel where possible and summarize the results in a short status report.
 
 1. **Python syntax** — `python3 -m py_compile eink-calendar/ui/render.py eink-calendar/ui/server.py`

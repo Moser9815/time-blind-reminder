@@ -1,3 +1,7 @@
+---
+description: Render the UI to PNG with sample data and verify it survives quantization
+---
+
 Render the calendar UI to a PNG using sample data, then inspect the result.
 
 1. `cd eink-calendar/ui`

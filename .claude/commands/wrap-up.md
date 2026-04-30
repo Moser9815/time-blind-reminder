@@ -1,3 +1,7 @@
+---
+description: End-of-session wrap-up — runs review agents, updates HANDOFF/BUGS/PRD, verifies tracking is current
+---
+
 End the current session cleanly. Updates tracking files and runs review agents.
 
 1. **Run review agents in parallel** — `developer-review`, `embedded-reviewer` (only if firmware changed), `ui-renderer-reviewer` (only if `ui/` changed). Address any blocking findings before continuing.

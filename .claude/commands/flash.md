@@ -1,3 +1,7 @@
+---
+description: Build and flash firmware to the Feather S3 — pre-flight checks, pio upload, serial monitor
+---
+
 Build and flash the firmware to the Feather S3.
 
 Pre-flight:
