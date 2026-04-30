@@ -443,13 +443,13 @@ function classifyCell(cellH, cellM, data) {
   if (cellStart <= nowMin && nowMin < cellEnd) {
     return "now";
   }
-  // Future cell — find any FUTURE event that overlaps. Skip past and
-  // current events that happen to bleed into the future portion of a
-  // cell (e.g. a current 10:00-10:50 meeting overlapping the 10:45-11:00
-  // cell — that cell's user-relevant content is "what's next", which is
-  // empty).
+  // Future cell — find any non-past event that overlaps. Past events
+  // can't bleed into future cells (their end < now, future cells start >= now),
+  // so excluding them is defensive. Current events that extend into future
+  // cells DO count — if you're in a 90-min meeting and the cell is the next
+  // 15 min of that meeting, the cell should read as occupied.
   const overlap = data.events.find(e =>
-    (e.state === "normal" || e.state === "imminent") &&
+    e.state !== "past" &&
     (e.startH * 60 + e.startM) < cellEnd &&
     (e.endH * 60 + e.endM) > cellStart
   );
