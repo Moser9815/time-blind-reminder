@@ -14,8 +14,9 @@ Last updated: 2026-04-29
 9. Researched partial-refresh capability for the Waveshare 7.5" tri-color panel — discovered GxEPD2 supports `refresh_bw()` (~1-2 sec, no flash) on this controller. Capability sat unused. Saved to memory.
 10. Pushed project to public GitHub: https://github.com/Moser9815/time-blind-reminder
 11. Designed and built a Nothing × TE design-token system; rendered 10 hi-fi concepts at `/tmp/tbr-concepts.html`; user picked concepts 1 (dot matrix hero) and 7 (stacked typography); built 3 variations of each at `/tmp/tbr-variations.html`.
-12. **Second redesign — variation 1B (grid day) is now the production layout.** Doto 240px hero on the left, 8×4 dot-grid on the right (32 cells × 15-min granularity over 8 working hours), salience escalation through cell-border color migration. Three Google Fonts: Doto (hero), Space Mono (technical numerals), Inter (labels). PRD-10 updated to formally allow one display face (Doto) for the hero numeral.
+12. **Second redesign — variation 1B (grid day) is now the production layout.** Doto 240px hero on the left, 8×4 dot-grid on the right (32 cells × 15-min granularity over 8 working hours), salience escalation through cell-border color migration. PRD-10 updated to formally allow one display face (Doto) for the hero numeral.
 13. Verified across all three scenarios (standard, imminent, late-afternoon). 3 colors only, ink leads red in all states.
+14. Switched the technical mono family from Space Mono to JetBrains Mono (chunkier strokes at small sizes) and bumped all 16px text to 18px — at panel resolution Space Mono's thin glyphs were losing detail through quantization. Re-rendered all three scenarios; small text is now visibly cleaner.
 
 The actual product code (`eink-calendar/`) was already in place — render server, sample data, HTML canvas, firmware skeleton. Hardware not yet assembled.
 

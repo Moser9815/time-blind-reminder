@@ -59,15 +59,15 @@ The grid is the day's shape; the hero is the next event's pressure. They reinfor
 
 | Element | Family | Size | Weight | Case | Color |
 |---------|--------|------|--------|------|-------|
-| Clock numerals | Space Mono | 28px | 700 | — | #1F1B16 (ink) |
+| Clock numerals | JetBrains Mono | 28px | 700 | — | #1F1B16 (ink) |
 | Clock AM/PM | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
 | Date | Inter | 18px | 600 | UPPER, 0.12em | #1F1B16 |
 | **Hero countdown** | **Doto** | **240px** | **700** | — | **#1F1B16 (ink)** |
 | Hero label "MIN UNTIL X" | Inter | 18px | 600 | UPPER, 0.18em | #1F1B16 |
-| NOW line (current event) | Space Mono | 16px | 700 | UPPER, 0.12em | #1F1B16 |
-| Grid row labels (:00 :15 :30 :45) | Space Mono | 16px | 700 | UPPER, 0.1em | #4A4540 → ink |
-| Grid column labels (9A 10 11 12P …) | Space Mono | 16px | 700 | UPPER, 0.1em | #4A4540 → ink |
-| Grid legend (DAY / 0/5 DONE) | Space Mono | 16px | 700 | UPPER, 0.1em | #4A4540 → ink |
+| NOW line (current event) | JetBrains Mono | 18px | 700 | UPPER, 0.1em | #1F1B16 |
+| Grid row labels (:00 :15 :30 :45) | JetBrains Mono | 18px | 700 | UPPER, 0.1em | #4A4540 → ink |
+| Grid column labels (9A 10 11 12P …) | JetBrains Mono | 18px | 700 | UPPER, 0.1em | #4A4540 → ink |
+| Grid legend (DAY / 0/5 DONE) | JetBrains Mono | 18px | 700 | UPPER, 0.1em | #4A4540 → ink |
 
 Every value meets PRD-9 floors. No weight below 500. No italics, no serifs.
 
@@ -75,7 +75,7 @@ The hero numeral is **ink**, not red. This matches the partial-refresh constrain
 
 ## Typography family
 
-PRD Principle 10 pairing: **Space Mono** for all technical numerals (clock, grid labels) and **Doto** for the single hero countdown numeral — Doto is allowed under PRD-10's "one display face" exception for the screen's primary signal. **Inter** handles all sans labels and event titles, ALL CAPS with letter-spacing ≥0.1em.
+PRD Principle 10 pairing: **JetBrains Mono** for all technical numerals (clock, grid labels) and **Doto** for the single hero countdown numeral — Doto is allowed under PRD-10's "one display face" exception for the screen's primary signal. **Inter** handles all sans labels and event titles, ALL CAPS with letter-spacing ≥0.1em.
 
 All three load via Google Fonts CDN; `render.py` waits on `document.fonts.ready` before screenshotting so the PNG never ships a fallback face. To swap to a paid display face (Berkeley Mono, NB Architekt) for production, drop the `<link>` in `index.html` and self-host the woff2.
 
