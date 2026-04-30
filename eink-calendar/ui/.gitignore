@@ -1,5 +1,6 @@
 credentials.json
 token.json
+config.json
 _cache.png
 *.tmp.html
 calendar.png

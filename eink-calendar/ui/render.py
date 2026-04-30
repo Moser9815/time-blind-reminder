@@ -75,12 +75,20 @@ def fetch_live_events(config):
         return _fetch_via_apps_script(
             config["apps_script_url"],
             config.get("apps_script_token", ""),
+            config.get("apps_script_auth", ""),
         )
     return _fetch_via_oauth(config)
 
 
-def _fetch_via_apps_script(url, token=""):
-    """Fetch the JSON feed from a deployed Apps Script web app."""
+def _fetch_via_apps_script(url, token="", auth_mode=""):
+    """Fetch the JSON feed from a deployed Apps Script web app.
+
+    auth_mode:
+      ""        — bare HTTP fetch (works for "Anyone" public deployments)
+      "browser" — authenticate using Chrome session cookies (works for
+                  "Anyone within <domain>" deployments where the user is
+                  signed into Google in Chrome). Requires browser-cookie3.
+    """
     import urllib.parse
     import urllib.request
 
@@ -89,11 +97,34 @@ def _fetch_via_apps_script(url, token=""):
         sep = "&" if "?" in url else "?"
         fetch_url = f"{url}{sep}token={urllib.parse.quote(token)}"
 
-    try:
-        with urllib.request.urlopen(fetch_url, timeout=15) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-    except Exception as e:
-        sys.exit(f"Apps Script fetch failed ({fetch_url!r}): {e}")
+    if auth_mode == "browser":
+        try:
+            import browser_cookie3
+            import requests
+        except ImportError:
+            sys.exit("auth_mode='browser' needs `pip install browser-cookie3 requests`.")
+        try:
+            cj = browser_cookie3.chrome(domain_name="google.com")
+        except Exception as e:
+            sys.exit(f"Could not load Chrome cookies for google.com: {e}. "
+                     "Make sure Chrome is installed and you're signed in.")
+        try:
+            r = requests.get(fetch_url, cookies=cj, timeout=15, allow_redirects=True)
+            r.raise_for_status()
+        except Exception as e:
+            sys.exit(f"Apps Script fetch failed ({fetch_url!r}): {e}. "
+                     "Check that you're signed in to Google in Chrome with the right account.")
+        try:
+            payload = r.json()
+        except Exception as e:
+            sys.exit(f"Apps Script returned non-JSON. http={r.status_code}, "
+                     f"body starts: {r.text[:200]!r}")
+    else:
+        try:
+            with urllib.request.urlopen(fetch_url, timeout=15) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+        except Exception as e:
+            sys.exit(f"Apps Script fetch failed ({fetch_url!r}): {e}")
 
     if isinstance(payload, dict) and payload.get("error"):
         sys.exit(f"Apps Script returned error: {payload['error']}. "
@@ -161,6 +192,20 @@ def _fetch_via_oauth(config):
     }
 
 
+def _parse_local(s):
+    """Parse an ISO datetime string, returning naive local time.
+
+    Sample data uses naive ISO ("2026-04-30T10:37:00") which we treat as
+    local. Apps Script returns UTC ISO ("2026-04-30T13:24:28.280Z") which
+    we convert to local. After this function, all datetimes are naive
+    local — the rest of the pipeline can compare them directly.
+    """
+    parsed = dt.datetime.fromisoformat(s)
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone().replace(tzinfo=None)
+    return parsed
+
+
 def derive_view_data(raw, override_now=None):
     """Take the raw event data and derive the layout-ready view model.
 
@@ -171,20 +216,15 @@ def derive_view_data(raw, override_now=None):
     stays aligned with the override regardless of today's actual date.
     """
     if override_now is not None:
-        canonical_date = dt.datetime.fromisoformat(raw["now"]).date()
+        canonical_date = _parse_local(raw["now"]).date()
         now = dt.datetime.combine(canonical_date, override_now.time())
     else:
-        now = dt.datetime.fromisoformat(raw["now"])
+        now = _parse_local(raw["now"])
     events = []
     for e in raw["events"]:
-        start = dt.datetime.fromisoformat(e["start"].replace("Z", ""))
-        end = dt.datetime.fromisoformat(e["end"].replace("Z", ""))
+        start = _parse_local(e["start"])
+        end = _parse_local(e["end"])
         events.append({**e, "_start": start, "_end": end})
-
-    # Strip timezone info if present so naive comparisons work
-    if events and events[0]["_start"].tzinfo:
-        if now.tzinfo is None:
-            now = now.replace(tzinfo=events[0]["_start"].tzinfo)
 
     current = next((e for e in events if e["_start"] <= now < e["_end"]), None)
     upcoming = [e for e in events if e["_start"] > now]
