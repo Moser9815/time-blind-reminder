@@ -31,8 +31,7 @@ venv/
 
 # Claude Code — local-only
 .claude/settings.local.json
-.claude/.needs-review
-.claude/.docs-verified
+.claude/.reminded-session
 .claude/PLAN.md
 
 # Anything in .claude/ that's transient

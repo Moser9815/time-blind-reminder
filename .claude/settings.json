@@ -9,15 +9,6 @@
             "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-destructive.sh\""
           }
         ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/gate-document-first.sh\""
-          }
-        ]
       }
     ],
     "PostToolUse": [
@@ -34,17 +25,7 @@
           },
           {
             "type": "command",
-            "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/mark-code-change.sh\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-completion.sh\""
+            "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/remind-wrap-up.sh\""
           }
         ]
       }

@@ -58,52 +58,16 @@ The split is deliberate — UI iteration happens in a real browser, not on a mic
 - **Mixing tz-aware and tz-naive datetimes** — `derive_view_data` strips tzinfo from `now` if events have it. If you change one, change both, or you'll get `TypeError: can't compare offset-naive and offset-aware datetimes` only on live data (sample data is always naive).
 - **Trusting browser preview color** — `index.html` opened in Chrome shows hex colors faithfully. The PNG sent to the device has gone through `Image.quantize` with a 3-color palette and dithering disabled. Always inspect `test.png` after a UI change.
 - **Forgetting `playwright install chromium`** — `pip install` brings the Playwright Python package but not the browser binary. First render fails with a missing-browser error; the fix is `playwright install chromium`, not pip.
+- **Editing the firmware boot sequence in place** — use a worktree agent for anything touching wake → WiFi → fetch → push → deep sleep; a bad boot path can leave the device unreachable until reflashed over USB.
 - **Pulling battery while flashing** — the Feather S3 is powered through USB-C while flashing; if the LiPo charger is also connected, the charge IC and USB can fight. Disconnect battery before flashing, reconnect after.
 - **Stripping `Z` from ISO timestamps with `.replace("Z", "")`** — current code does this in `derive_view_data` line ~123 to make `fromisoformat` work on Python <3.11. If we ever bump to 3.11+ and someone "cleans this up", the live calendar path breaks on Google's `Z`-suffixed timestamps.
 - **Using `--no-verify` to push past hook failures** — hooks exist because something burned us. If a hook blocks an action, fix the underlying issue, don't bypass.
 
-## Tracking Documents (Requirements, Not Suggestions)
-
-These are gates. Document before coding. Update after coding. Never skip.
-
-**Order: document → code → verify → document.**
-
-- **PLAN** (`.claude/PLAN.md`) — Write before implementation begins for any multi-step task. Check off steps. Keep until verified by agents or user.
-- **BUGS** (`BUGS.md`) — Log every bug IMMEDIATELY when mentioned, before any fix attempt. Update with resolution after fix.
-- **PRD** (`PRD.md`) — When user gives product direction, invoke product-owner agent BEFORE implementing. Code against the written spec, not a verbal description.
-- **Memory** — Save non-obvious learnings immediately when discovered, not batched.
-- **HANDOFF** (`.claude/HANDOFF.md`) — Update after work is complete. Read at session start.
-
-**Session start**: ALWAYS read `.claude/HANDOFF.md` first — it has what we were working on and what's next.
-
-## Agent Strategy
-
-Keep the main conversation lean. Delegate heavy work to agents.
-
-- **Research/exploration** → Explore agent. Don't read 10 docs in main context.
-- **Multi-step code changes** → main conversation with a written PLAN.
-- **Independent investigations** → parallel agents (e.g. "is this a render bug or a quantize bug?").
-- **Dependent steps** → sequential. Don't start step 2 until step 1 is verified.
-- **Risky/experimental changes** → worktree agent (especially anything touching the firmware boot sequence).
-- **Review and verification** → always agents. Never self-review — bias is inevitable.
-- **Goal**: protect main context from bloat. Large context → compression → quality drops.
-
-## Review Agents
-
-After every fix, run all agents in `.claude/agents/` in parallel. Fix issues found, re-run until clean. Only report "done" after all pass.
-
-- `developer-review` — code quality, dead code, race conditions
-- `embedded-reviewer` — firmware-specific: power budget, PSRAM, watchdogs, deep sleep correctness
-- `ui-renderer-reviewer` — palette compliance, view-model correctness, post-quantize visual check
-- `product-owner` — PRD maintenance when user gives product direction
-
-## Proactive Memory Updates
-
-After resolving any non-trivial issue, IMMEDIATELY update memory files. Triggers: non-obvious bug fix, config discovery (especially around OAuth, PlatformIO, Playwright), failed workaround, stale memory.
-
-## When I Make a Mistake
-
-1. Reflect: what went wrong and why?
-2. Abstract: what's the general pattern?
-3. Update: add Do/Don't/Why to Patterns or entry to Common Mistakes
-4. Save: update memory files immediately
+## Tracking & Review
+- `.claude/HANDOFF.md` — read at session start; update when work wraps up (`/wrap-up`)
+- `BUGS.md` — log bugs found or discussed; record the fix when resolved
+- `PRD.md` — product spec, maintained by the `product-owner` agent when the user gives product direction
+- Review agents in `.claude/agents/` — run the relevant ones for non-trivial changes:
+  - `developer-review` — code quality, dead code, race conditions
+  - `embedded-reviewer` — firmware: power budget, PSRAM, watchdogs, deep sleep (when firmware changes)
+  - `ui-renderer-reviewer` — palette compliance, view model, post-quantize check (when `ui/` changes)
